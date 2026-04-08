@@ -3,204 +3,212 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>阿吉進場模擬器 v1.2</title>
+  <title>阿吉進場模擬器 V1.3 WORKER</title>
   <style>
     :root{
       --bg:#eef4ff;
-      --bg2:#f7faff;
+      --bg2:#f8fbff;
       --card:#ffffff;
-      --line:#d6e4ff;
-      --line2:#bdd3ff;
-      --blue:#2f6df6;
-      --blue2:#5e8cff;
-      --blue3:#eaf1ff;
+      --line:#d9e6ff;
+      --line2:#bdd1ff;
       --text:#17305c;
-      --muted:#6c86b2;
-      --up:#e04b5a;   /* 台股：漲紅 */
-      --down:#16a34a; /* 台股：跌綠 */
-      --shadow:0 20px 55px rgba(44,94,192,.10);
-      --shadow2:0 12px 30px rgba(44,94,192,.08);
-      --radius:26px;
+      --muted:#6f86b3;
+      --blue:#2f6df6;
+      --blue2:#6293ff;
+      --blueSoft:#edf3ff;
+      --red:#e44e5f;
+      --green:#1aa463;
+      --amber:#f59e0b;
+      --shadow:0 18px 52px rgba(48,94,192,.10);
+      --radius:24px;
     }
     *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
     body{
-      margin:0;
-      font-family:"Noto Sans TC","Segoe UI",system-ui,sans-serif;
-      background:linear-gradient(180deg,#f5f8ff 0%,#eaf1ff 100%);
+      font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+      background:linear-gradient(180deg,#f6f9ff 0%,#edf4ff 45%,#e9f0ff 100%);
       color:var(--text);
+      min-height:100vh;
+      padding:24px;
     }
-    .wrap{max-width:1540px;margin:0 auto;padding:24px}
-    .hero{
-      background:linear-gradient(135deg,#ffffff 0%,#f3f7ff 100%);
+    .shell{max-width:1520px;margin:0 auto;display:grid;gap:18px}
+    .panel{
+      background:linear-gradient(135deg,#ffffff 0%,#f5f8ff 100%);
       border:1px solid var(--line2);
       border-radius:32px;
       box-shadow:var(--shadow);
       padding:28px;
-      margin-bottom:20px;
+      animation:fadeUp .45s ease;
+    }
+    .hero-top{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-start}
+    .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:800}
+    h1{margin:8px 0 10px;font-size:38px;line-height:1.05}
+    .sub{font-size:15px;line-height:1.7;color:var(--muted);max-width:920px}
+    .tag{
+      padding:10px 14px;border-radius:999px;background:var(--blueSoft);border:1px solid var(--line2);color:var(--blue);font-weight:800;
+      box-shadow:0 8px 20px rgba(47,109,246,.08)
+    }
+    .grid{display:grid;grid-template-columns:520px 1fr;gap:18px;align-items:start}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:22px;
+      box-shadow:0 12px 28px rgba(76,121,197,.08);
       animation:fadeUp .55s ease;
     }
-    .hero-top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap}
-    .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:900}
-    h1{margin:8px 0 10px;font-size:40px;line-height:1.06}
-    .sub{max-width:920px;color:var(--muted);font-size:16px;line-height:1.7}
-    .hero-badge{
-      border:1px solid var(--line2);
-      background:linear-gradient(135deg,#eef4ff,#ffffff);
-      border-radius:22px;
-      padding:14px 16px;
-      box-shadow:var(--shadow2);
-      min-width:240px;
+    .card h2{margin:0 0 8px;font-size:28px}
+    .card-sub{color:var(--muted);line-height:1.65;font-size:14px;margin-bottom:16px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field{display:grid;gap:8px}
+    .field.full{grid-column:1/-1}
+    label{font-size:13px;font-weight:800;color:var(--text)}
+    input,select,textarea{
+      width:100%;border-radius:16px;border:1px solid var(--line2);background:#fff;padding:13px 14px;color:var(--text);font-size:15px;outline:none;
+      transition:.2s ease;border-color:var(--line2);box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
     }
-    .hero-badge .t1{font-size:12px;color:var(--muted);font-weight:700}
-    .hero-badge .t2{margin-top:8px;font-size:24px;font-weight:900;color:var(--blue)}
-    .grid{display:grid;grid-template-columns:520px 1fr;gap:18px;align-items:start}
-    .panel{
-      background:rgba(255,255,255,.78);
-      border:1px solid var(--line2);
-      border-radius:30px;
-      box-shadow:var(--shadow);
-      padding:22px;
-      backdrop-filter:blur(6px);
-      animation:fadeUp .62s ease;
-    }
-    .title{font-size:26px;font-weight:900;margin:0 0 12px}
-    .muted{color:var(--muted)}
-    .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
-    .field label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
-    .input,.select,.textarea{
-      width:100%;border:1px solid var(--line2);background:#fbfdff;color:var(--text);
-      border-radius:18px;padding:14px 16px;font:inherit;outline:none;transition:.2s box-shadow,.2s border-color;
-    }
-    .input:focus,.select:focus,.textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.12)}
-    .textarea{min-height:92px;resize:vertical}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.10)}
+    textarea{min-height:88px;resize:vertical}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
     .btn{
-      border:none;border-radius:18px;padding:14px 18px;font:inherit;font-weight:900;cursor:pointer;
-      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease; box-shadow:var(--shadow2);
+      border:none;border-radius:16px;padding:13px 18px;font-size:14px;font-weight:800;cursor:pointer;transition:.18s ease;letter-spacing:.01em
     }
     .btn:hover{transform:translateY(-1px)}
-    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-    .btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
-    .btn-ghost{background:#fff;color:var(--blue);border:1px solid var(--line2)}
-    .btn-soft{background:var(--blue3);color:var(--blue)}
-    .status{
-      margin-top:14px;padding:12px 14px;border-radius:18px;background:#f7fbff;border:1px dashed var(--line2);
-      color:var(--muted);font-size:14px;min-height:48px;display:flex;align-items:center
+    .btn-blue{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 12px 24px rgba(47,109,246,.22)}
+    .btn-soft{background:var(--blueSoft);color:var(--blue);border:1px solid var(--line2)}
+    .btn-ghost{background:#fff;color:var(--muted);border:1px solid var(--line2)}
+    .hint{
+      margin-top:14px;padding:14px 16px;border:1px dashed var(--line2);border-radius:18px;background:linear-gradient(135deg,#f8fbff,#eef4ff);color:var(--muted);line-height:1.7;font-size:14px
     }
-    .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
-    .metric{
-      background:var(--card);border:1px solid var(--line);border-radius:26px;padding:18px 16px;box-shadow:var(--shadow2);min-height:148px;
-      display:flex;flex-direction:column;justify-content:space-between;transition:transform .18s ease;
+    .gate{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-radius:20px;margin-top:16px;border:1px solid var(--line);background:#fff
     }
-    .metric:hover{transform:translateY(-2px)}
-    .metric .k{font-size:14px;color:var(--muted);font-weight:800}
-    .metric .v{font-size:56px;line-height:1;font-weight:1000;letter-spacing:-.04em}
-    .metric .s{font-size:14px;color:var(--muted);font-weight:700}
-    .up{color:var(--up)} .down{color:var(--down)} .blue{color:var(--blue)}
-    .day-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
-    .day-card{
-      background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
-      border:1px solid var(--line);border-radius:24px;padding:14px;box-shadow:var(--shadow2);min-height:176px;
-      position:relative;overflow:hidden;transform:translateY(8px);opacity:0;animation:popIn .38s forwards;
+    .gate-title{font-size:24px;font-weight:900;line-height:1.1}
+    .gate-desc{font-size:14px;color:var(--muted);margin-top:6px}
+    .gate.ok{background:linear-gradient(135deg,#ffffff 0%,#f3fbf6 100%)}
+    .gate.no{background:linear-gradient(135deg,#ffffff 0%,#fff5f7 100%)}
+    .gate.wait{background:linear-gradient(135deg,#ffffff 0%,#f6f9ff 100%)}
+    .gate .pill{padding:10px 14px;border-radius:999px;font-size:13px;font-weight:900;white-space:nowrap}
+    .gate.ok .pill{background:rgba(26,164,99,.10);color:var(--green)}
+    .gate.no .pill{background:rgba(228,78,95,.12);color:var(--red)}
+    .gate.wait .pill{background:rgba(47,109,246,.10);color:var(--blue)}
+
+    .days-wrap{display:grid;gap:14px}
+    .days-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+    .days-head h2{margin:0;font-size:28px}
+    .days-head .tiny{font-size:14px;color:var(--muted)}
+    .day-pills{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    .day-pill{
+      border:1px solid var(--line2);background:linear-gradient(135deg,#fff 0%,#f3f7ff 100%);border-radius:22px;padding:14px 14px 12px;cursor:pointer;transition:.18s ease;min-height:116px;
+      display:grid;align-content:space-between;box-shadow:0 10px 22px rgba(76,121,197,.08)
     }
-    .day-card::after{content:'';position:absolute;inset:auto 0 0 0;height:4px;background:linear-gradient(90deg,var(--blue),#8eb0ff)}
-    .day-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .day-name{font-size:24px;font-weight:1000;color:var(--blue)}
-    .day-date{font-size:12px;color:var(--muted);font-weight:800}
-    .day-close{margin-top:16px;font-size:44px;line-height:1;font-weight:1000;letter-spacing:-.04em}
-    .day-chg{margin-top:8px;font-size:18px;font-weight:900}
-    .day-meta{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .mini{background:#f7fbff;border:1px solid var(--line);border-radius:14px;padding:8px 10px}
-    .mini .kk{font-size:11px;color:var(--muted);font-weight:800}
-    .mini .vv{font-size:15px;font-weight:900;margin-top:3px}
-    .result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-    .plan-card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:18px;box-shadow:var(--shadow2)}
+    .day-pill:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(76,121,197,.12)}
+    .day-pill.active{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.10),0 14px 28px rgba(76,121,197,.12)}
+    .day-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .day-name{font-size:14px;font-weight:900;color:var(--blue)}
+    .day-date{font-size:12px;color:var(--muted)}
+    .day-close{font-size:28px;font-weight:900;line-height:1.05}
+    .day-change{font-size:16px;font-weight:900}
+    .up{color:var(--red)}
+    .down{color:var(--green)}
+    .flat{color:var(--muted)}
+    .day-ohlc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:12px;color:var(--muted)}
+    .day-ohlc span b{color:var(--text);font-weight:800}
+
+    .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+    .summary-box{background:#fff;border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 10px 22px rgba(76,121,197,.08)}
+    .summary-label{font-size:14px;color:var(--muted);font-weight:800;margin-bottom:10px}
+    .summary-val{font-size:44px;font-weight:900;line-height:1.02}
+    .summary-sub{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.6}
+
+    .result-grid{display:grid;grid-template-columns:1.05fr 1.3fr;gap:18px;align-items:start}
+    .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .plan-card{background:#fff;border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 24px rgba(76,121,197,.08);position:relative;overflow:hidden}
+    .plan-card.best{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.08),0 12px 26px rgba(76,121,197,.12)}
     .plan-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .plan-name{font-size:24px;font-weight:1000}
-    .plan-badge{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:900}
-    .badge-hold{background:#e9fff3;color:#14824e}
-    .badge-stop{background:#fff1f3;color:#d83753}
-    .badge-force{background:#eef4ff;color:var(--blue)}
-    .plan-rule{margin-top:6px;font-size:17px;color:var(--muted);font-weight:800}
-    .plan-pct{margin-top:18px;font-size:68px;line-height:1;font-weight:1000;letter-spacing:-.05em}
-    .plan-pnl{margin-top:8px;font-size:22px;font-weight:900}
-    .plan-meta{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .meta-box{background:#f7fbff;border:1px solid var(--line);border-radius:18px;padding:10px 12px}
-    .meta-box .mk{font-size:12px;color:var(--muted);font-weight:800}
-    .meta-box .mv{margin-top:4px;font-size:18px;font-weight:1000}
-    .trace-wrap{margin-top:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-    .trace-card{background:#fbfdff;border:1px solid var(--line);border-radius:26px;padding:16px;box-shadow:var(--shadow2)}
-    .trace-title{font-size:22px;font-weight:1000;color:var(--blue);margin-bottom:10px}
-    table{width:100%;border-collapse:collapse;overflow:hidden}
-    th,td{padding:10px 8px;border-bottom:1px solid #eaf0ff;text-align:left;font-size:14px}
-    th{color:var(--muted);font-weight:900}
+    .plan-name{font-size:26px;font-weight:900;line-height:1.1}
+    .plan-rule{font-size:13px;color:var(--muted);line-height:1.6;margin-top:8px}
+    .badge{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:900;background:#edf8f2;color:var(--green)}
+    .plan-return{font-size:56px;font-weight:900;line-height:1.02;margin:24px 0 16px}
+    .plan-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;font-size:14px}
+    .plan-meta div{line-height:1.65;color:var(--muted)}
+    .plan-meta b{color:var(--text)}
+
+    .track-wrap{display:grid;gap:16px}
+    .track-card{background:#fff;border:1px solid var(--line);border-radius:26px;padding:18px;box-shadow:0 10px 24px rgba(76,121,197,.08)}
+    .track-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+    .track-chip{padding:8px 14px;border-radius:999px;background:var(--blueSoft);border:1px solid var(--line2);color:var(--blue);font-weight:900}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line)}
+    th,td{padding:13px 12px;text-align:left;border-bottom:1px solid var(--line)}
+    th{background:#f3f7ff;color:#5e78a9;font-size:14px;font-weight:900}
+    td{font-size:15px}
     tr:last-child td{border-bottom:none}
-    .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}
-    .pill-hold{background:#eef4ff;color:var(--blue)}
-    .pill-half{background:#fff8e6;color:#b7791f}
-    .pill-full{background:#ffeef1;color:#d83753}
-    .pill-force{background:#eafff4;color:#13814d}
-    .record-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:22px;margin-bottom:10px}
-    .record-list{display:grid;gap:10px}
-    .record-item{background:#ffffff;border:1px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow2)}
-    .record-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-    .record-name{font-size:18px;font-weight:1000}
-    .record-sub{font-size:13px;color:var(--muted);font-weight:700;margin-top:4px}
-    .empty{
-      text-align:center;padding:34px 16px;border:1px dashed var(--line2);border-radius:24px;color:var(--muted);background:#fbfdff;
+    tr.active-day td{background:#f6f9ff}
+    .mini-tag{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;display:inline-block}
+    .tag-hold{background:#eef4ff;color:var(--blue)}
+    .tag-half{background:#fff7e8;color:var(--amber)}
+    .tag-sell{background:#fff2f4;color:var(--red)}
+    .tag-force{background:#edf8f2;color:var(--green)}
+
+    .trace-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+    .check-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+    .check{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid var(--line);font-size:14px;color:var(--text)}
+    .check input{width:18px;height:18px;margin:0}
+    .record-wrap{display:grid;gap:12px;margin-top:16px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .record-table{max-height:380px;overflow:auto;border-radius:20px;border:1px solid var(--line);background:#fff}
+    .footer-note{color:var(--muted);font-size:13px;line-height:1.7}
+    .empty{padding:20px;border:1px dashed var(--line2);border-radius:18px;background:#fbfdff;color:var(--muted);text-align:center}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width:1260px){
+      .grid,.result-grid{grid-template-columns:1fr}
+      .summary-grid,.plan-grid,.trace-form,.check-list{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
-    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes popIn{to{opacity:1;transform:translateY(0)}}
-    @media (max-width: 1180px){
-      .grid{grid-template-columns:1fr}
-      .summary-grid,.day-strip,.result-grid,.trace-wrap{grid-template-columns:1fr 1fr}
-    }
-    @media (max-width: 760px){
-      .wrap{padding:14px}
+    @media (max-width:860px){
+      body{padding:14px}
+      .panel,.card{padding:18px}
       h1{font-size:30px}
-      .fields,.summary-grid,.day-strip,.result-grid,.trace-wrap{grid-template-columns:1fr}
-      .metric .v,.plan-pct,.day-close{font-size:42px}
+      .form-grid,.summary-grid,.plan-grid,.trace-form,.check-list,.day-pills{grid-template-columns:1fr}
+      .summary-val{font-size:34px}
+      .plan-return{font-size:42px}
+      table{display:block;overflow:auto}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
+  <div class="shell">
+    <section class="panel">
       <div class="hero-top">
         <div>
           <div class="kicker">Ajie Entry Simulator</div>
-          <h1>阿吉進場模擬器 v1.2</h1>
-          <div class="sub">這版直接接你的 Worker。你只要輸入股票代號、訊號日期、台幣金額，系統就會自動抓 <b>T+1 ~ T+5</b> 日 K，然後同時跑 A / B / C 三套止損方案。手貼資料那套，我先請它退休。</div>
+          <h1>阿吉進場模擬器 V1.3</h1>
+          <div class="sub">這版改成比較像真的下海：你只輸入股票代號、日期、台幣金額，系統自動抓 <b>T+1 ~ T+5</b>，直接跑 A / B / C 三套止損，重點只看怎麼離場、賺賠多少、哪套活得比較久。</div>
         </div>
-        <div class="hero-badge">
-          <div class="t1">目前資料來源</div>
-          <div class="t2">Cloudflare Worker</div>
-          <div class="t1" style="margin-top:8px;word-break:break-all">damp-river-be4d.emoon71.workers.dev</div>
-        </div>
+        <div class="tag">白藍質感版・WORKER 修正版</div>
       </div>
     </section>
 
-    <div class="grid">
-      <section class="panel">
-        <h2 class="title">1. 輸入條件</h2>
-        <div class="muted">現在抓的是 <b>/yahoo-proxy</b>，不是 /tech。前者才有五日 OHLC，後者是技術摘要，不能拿來演離場。</div>
-
-        <div class="fields">
+    <section class="grid">
+      <div class="card">
+        <h2>1. 輸入條件</h2>
+        <div class="card-sub">台股代號像 2330，這版會先走你的 <b>Cloudflare Worker</b>；重點已修正成走 <b>/yahoo-proxy</b> 拿 D1~D5，因為 <b>/tech</b> 是技術指標，不是 K 棒配送員。</div>
+        <div class="form-grid">
           <div class="field">
-            <label for="code">股票代號</label>
-            <input id="code" class="input" value="2330" placeholder="例如：2330、NVDA" />
+            <label for="symbol">股票代號</label>
+            <input id="symbol" placeholder="例如：2330 或 NVDA" />
           </div>
           <div class="field">
             <label for="signalDate">訊號日期</label>
-            <input id="signalDate" class="input" type="date" value="2026-04-09" />
+            <input id="signalDate" type="date" />
           </div>
           <div class="field">
             <label for="capital">台幣金額</label>
-            <input id="capital" class="input" type="number" value="100000" min="0" step="1000" />
+            <input id="capital" type="number" min="0" step="1" placeholder="例如：100000" />
           </div>
           <div class="field">
             <label for="attitude">進場態度</label>
-            <select id="attitude" class="select">
+            <select id="attitude">
               <option>可積極進場</option>
               <option>可小量試單</option>
               <option>只觀察不追</option>
@@ -208,8 +216,8 @@
             </select>
           </div>
           <div class="field">
-            <label for="regime">盤種類</label>
-            <select id="regime" class="select">
+            <label for="marketType">盤種類</label>
+            <select id="marketType">
               <option>多頭主升盤</option>
               <option>多頭震盪盤</option>
               <option>高檔盤整盤</option>
@@ -218,312 +226,721 @@
             </select>
           </div>
           <div class="field">
-            <label for="workerBase">Worker Base URL</label>
-            <input id="workerBase" class="input" value="https://damp-river-be4d.emoon71.workers.dev" />
+            <label for="currencyNote">模式補充</label>
+            <input id="currencyNote" placeholder="例如：今天只想小測，不想亂追" />
+          </div>
+          <div class="field full">
+            <label for="note">備註</label>
+            <textarea id="note" placeholder="想記什麼就記。這台不是法官，是你的驗屍紀錄官。"></textarea>
           </div>
         </div>
-
-        <div class="field" style="margin-top:14px">
-          <label for="note">備註</label>
-          <textarea id="note" class="textarea" placeholder="例如：今天只想小測，不想亂衝。這台不是法官，是你的驗屍紀錄官。"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-blue" id="fetchBtn">自動抓 5 日資料</button>
+          <button class="btn btn-soft" id="runBtn">跑 A / B / C 方案</button>
+          <button class="btn btn-soft" id="saveBtn">加入紀錄簿</button>
+          <button class="btn btn-ghost" id="clearBtn">清空</button>
         </div>
-
-        <div class="actions">
-          <button id="fetchBtn" class="btn btn-primary">自動抓 5 日資料</button>
-          <button id="simulateBtn" class="btn btn-soft">跑 A / B / C 方案</button>
-          <button id="saveBtn" class="btn btn-ghost">加入紀錄簿</button>
-          <button id="exportBtn" class="btn btn-ghost">匯出 CSV</button>
+        <div class="hint">
+          <b>Worker 設定位置：</b>script 最上方的 <b>WORKER_CONFIG.baseUrl</b> 已先幫你填好。你貼的 <b>/tech?symbol=</b> 其實接法不對，這版已自動改走 <b>/yahoo-proxy</b>。<br>
+          <b>規則固定：</b>進場價 = <b>D1 開盤</b>；止損順序 = <b>先全賣，再減半</b>；若都沒觸發，<b>D5 收盤強制結算</b>。<br>
+          進場態度 = <b>可積極進場</b> 用 100% 金額、<b>可小量試單</b> 用 50% 金額、其餘不進場。
         </div>
-        <div id="status" class="status">待命中。先按「自動抓 5 日資料」，我去 Worker 把 D1 ~ D5 抓回來。</div>
-      </section>
+        <div id="gateBox" class="gate wait">
+          <div>
+            <div class="gate-title">等待輸入</div>
+            <div class="gate-desc">先填好條件，再抓資料。模擬器也需要早餐。</div>
+          </div>
+          <div class="pill">尚未判定</div>
+        </div>
+      </div>
 
-      <section class="panel">
-        <h2 class="title">2. 五日快看</h2>
-        <div class="muted" style="margin-bottom:14px">你要的就是這種：<b>一日、二日、三日、四日、五日</b>，直接看收盤跟漲跌。漲紅、跌綠，不演西式審美。</div>
-        <div id="days" class="day-strip"></div>
-      </section>
-    </div>
-
-    <section class="panel" style="margin-top:18px">
-      <h2 class="title">3. 方案結果</h2>
-      <div class="summary-grid" id="summaryGrid"></div>
-      <div class="result-grid" id="resultGrid"></div>
-      <div class="trace-wrap" id="traceWrap"></div>
+      <div class="card days-wrap">
+        <div class="days-head">
+          <div>
+            <h2>2. 一日 ～ 五日</h2>
+            <div class="tiny">你要的快看版：<b>504 漲 2</b> 這種感覺就放這裡。漲紅、跌綠，點哪天就看哪天。</div>
+          </div>
+          <div class="tiny" id="fetchStatus">尚未抓資料</div>
+        </div>
+        <div class="day-pills" id="dayPills"></div>
+      </div>
     </section>
 
-    <section class="panel" style="margin-top:18px">
-      <div class="record-head">
-        <h2 class="title" style="margin:0">4. 紀錄簿</h2>
-        <div class="muted">本機儲存。壞消息是它很誠實，好消息也是。</div>
+    <section class="card">
+      <h2>3. 方案結果</h2>
+      <div class="card-sub">只看真正重要的：有沒有先減半、最後怎麼離場、哪套比較好。愛的畫面，我留著；土的流程，我幫你砍掉。</div>
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="summary-label">開關狀態</div>
+          <div class="summary-val" id="summaryGate">等待</div>
+          <div class="summary-sub" id="summaryGateDesc">還沒跑，不急，錢也還沒飛出去。</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">比較方案</div>
+          <div class="summary-val">3</div>
+          <div class="summary-sub">A / B / C 同場比較，公平，不演。</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">最佳方案</div>
+          <div class="summary-val" id="bestPlan">--</div>
+          <div class="summary-sub" id="bestPlanDesc">先抓資料，再決定誰是今日 MVP。</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">最佳報酬</div>
+          <div class="summary-val" id="bestReturn">--</div>
+          <div class="summary-sub" id="bestReturnDesc">等你按下去，它才會講實話。</div>
+        </div>
       </div>
-      <div id="recordList" class="record-list"></div>
+    </section>
+
+    <section class="result-grid">
+      <div class="card">
+        <h2>4. 比較方案</h2>
+        <div class="plan-grid" id="planGrid"></div>
+      </div>
+
+      <div class="card">
+        <h2>5. 離場軌跡</h2>
+        <div class="card-sub">只有真正重要的：<b>有沒有先減半、最後怎麼離場、是哪一天出去</b>。</div>
+        <div class="track-wrap" id="trackWrap"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>6. 事後追因</h2>
+      <div class="card-sub">這區只做驗屍，不參與主判斷。先確認你只看盤進場有沒有基礎優勢，再回頭抓兇手。</div>
+      <div class="check-list">
+        <label class="check"><input type="checkbox" value="戰爭" />戰爭</label>
+        <label class="check"><input type="checkbox" value="關稅" />關稅</label>
+        <label class="check"><input type="checkbox" value="FOMC/CPI" />FOMC / CPI</label>
+        <label class="check"><input type="checkbox" value="長假前" />長假前</label>
+        <label class="check"><input type="checkbox" value="月底" />月底</label>
+        <label class="check"><input type="checkbox" value="黑天鵝" />黑天鵝</label>
+        <label class="check"><input type="checkbox" value="尾盤轉弱" />尾盤轉弱</label>
+        <label class="check"><input type="checkbox" value="族群熄火" />族群熄火</label>
+      </div>
+      <div class="trace-form">
+        <div class="field" style="grid-column:1/-1">
+          <label for="reasonNote">追因備註</label>
+          <textarea id="reasonNote" placeholder="例如：消息面很吵，族群整個熄火，尾盤翻臉不認人。"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card record-wrap">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0 0 8px">7. 紀錄簿</h2>
+          <div class="footer-note">重點只留離場結果，回頭才看得懂自己都死在哪。資料存在瀏覽器本機，不會飛去宇宙。</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-soft" id="exportBtn">匯出 CSV</button>
+          <button class="btn btn-ghost" id="clearLogBtn">清空紀錄簿</button>
+        </div>
+      </div>
+      <div class="record-table">
+        <table>
+          <thead>
+            <tr>
+              <th>時間</th>
+              <th>股票</th>
+              <th>日期</th>
+              <th>金額</th>
+              <th>盤種類</th>
+              <th>態度</th>
+              <th>最佳方案</th>
+              <th>最佳損益</th>
+              <th>最佳報酬</th>
+              <th>追因</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
     </section>
   </div>
 
   <script>
-    const PLANS = [
-      { name:'A方案', half:5, full:7 },
-      { name:'B方案', half:3, full:5 },
-      { name:'C方案', half:1.5, full:3 },
-    ];
-
-    const state = {
-      rows: [],
-      prevRows: [],
-      results: [],
-      lastFetchMeta: null,
+    const WORKER_CONFIG = {
+      enabled: true,
+      baseUrl: 'https://damp-river-be4d.emoon71.workers.dev/tech?symbol=',
+      yahooProxyPath: '/yahoo-proxy',
+      techPath: '/tech',
+      timeoutMs: 12000,
+      headers: {
+        Accept: 'application/json'
+      }
     };
 
-    const $ = (id) => document.getElementById(id);
-    const statusEl = $('status');
+    const plans = [
+      { name:'A方案', halfPct:0.05, fullPct:0.07, rule:'-5% 減半 / -7% 全賣' },
+      { name:'B方案', halfPct:0.03, fullPct:0.05, rule:'-3% 減半 / -5% 全賣' },
+      { name:'C方案', halfPct:0.015, fullPct:0.03, rule:'-1.5% 減半 / -3% 全賣' },
+    ];
 
-    function setStatus(text, tone='normal'){
-      statusEl.textContent = text;
-      statusEl.style.color = tone === 'error' ? '#cf2747' : tone === 'ok' ? '#126e4a' : 'var(--muted)';
-      statusEl.style.borderColor = tone === 'error' ? '#ffc6d0' : tone === 'ok' ? '#b8ead1' : 'var(--line2)';
-      statusEl.style.background = tone === 'error' ? '#fff5f7' : tone === 'ok' ? '#f2fff7' : '#f7fbff';
+    const els = {
+      symbol: document.getElementById('symbol'),
+      signalDate: document.getElementById('signalDate'),
+      capital: document.getElementById('capital'),
+      attitude: document.getElementById('attitude'),
+      marketType: document.getElementById('marketType'),
+      currencyNote: document.getElementById('currencyNote'),
+      note: document.getElementById('note'),
+      gateBox: document.getElementById('gateBox'),
+      fetchBtn: document.getElementById('fetchBtn'),
+      runBtn: document.getElementById('runBtn'),
+      saveBtn: document.getElementById('saveBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      fetchStatus: document.getElementById('fetchStatus'),
+      dayPills: document.getElementById('dayPills'),
+      summaryGate: document.getElementById('summaryGate'),
+      summaryGateDesc: document.getElementById('summaryGateDesc'),
+      bestPlan: document.getElementById('bestPlan'),
+      bestPlanDesc: document.getElementById('bestPlanDesc'),
+      bestReturn: document.getElementById('bestReturn'),
+      bestReturnDesc: document.getElementById('bestReturnDesc'),
+      planGrid: document.getElementById('planGrid'),
+      trackWrap: document.getElementById('trackWrap'),
+      reasonNote: document.getElementById('reasonNote'),
+      logBody: document.getElementById('logBody'),
+      exportBtn: document.getElementById('exportBtn'),
+      clearLogBtn: document.getElementById('clearLogBtn')
+    };
+
+    const state = {
+      bars: [],
+      selectedDay: 0,
+      results: [],
+      logs: [],
+      fetchedSymbol: '',
+      dataSource: ''
+    };
+
+    function isTwLikeSymbol(raw){
+      const s = String(raw || '').trim().toUpperCase();
+      return /^\d{4,6}$/.test(s) || /^\d{4,6}\.(TW|TWO)$/.test(s);
     }
 
-    function fmtMoney(v){
-      return Number(v || 0).toLocaleString('zh-TW', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+    function getTwBaseSymbol(raw){
+      return String(raw || '').trim().toUpperCase().replace(/\.(TW|TWO)$/,'');
     }
-    function fmtPct(v){
-      const n = Number(v || 0);
-      return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+
+    function normalizeYahooSymbol(raw){
+      const s = String(raw || '').trim().toUpperCase();
+      if(!s) return '';
+      if(/[.=]/.test(s)) return s;
+      if(/^\d{4,6}$/.test(s)) return `${s}.TW`;
+      return s;
     }
-    function clsByNum(v){ return Number(v) >= 0 ? 'up' : 'down'; }
-    function labelByNum(v){ return Number(v) >= 0 ? `漲 ${Math.abs(Number(v)).toFixed(2)}` : `跌 ${Math.abs(Number(v)).toFixed(2)}`; }
-    function dayName(i){ return ['一日','二日','三日','四日','五日'][i] || `D${i+1}`; }
-    function toDateStr(ts){ return new Date(ts * 1000).toLocaleDateString('sv-SE', { timeZone:'Asia/Taipei' }); }
-    function dateToTs(dateStr, end=false){
-      return Math.floor(new Date(`${dateStr}T${end ? '23:59:59' : '00:00:00'}+08:00`).getTime() / 1000);
-    }
-    function shiftDate(dateStr, days){
-      const d = new Date(`${dateStr}T00:00:00+08:00`);
-      d.setDate(d.getDate() + days);
+
+    function fmtDate(date){
+      const d = new Date(date);
+      if(Number.isNaN(d.getTime())) return '';
       const y = d.getFullYear();
       const m = String(d.getMonth()+1).padStart(2,'0');
       const day = String(d.getDate()).padStart(2,'0');
       return `${y}-${m}-${day}`;
     }
 
-    function normalizeYahooRows(raw){
-      const result = raw?.data?.chart?.result?.[0] || raw?.chart?.result?.[0];
-      const quote = result?.indicators?.quote?.[0];
-      const timestamps = result?.timestamp || [];
-      if(!result || !quote || !timestamps.length) return [];
-      const rows = [];
-      for(let i = 0; i < timestamps.length; i++){
-        const close = Number(quote.close?.[i]);
-        const open = Number(quote.open?.[i]);
-        const high = Number(quote.high?.[i]);
-        const low = Number(quote.low?.[i]);
-        if(!Number.isFinite(close) || !Number.isFinite(open) || !Number.isFinite(high) || !Number.isFinite(low)) continue;
-        rows.push({
-          ts: timestamps[i],
-          date: toDateStr(timestamps[i]),
-          open, high, low, close,
-          volume: Number(quote.volume?.[i]) || 0,
-        });
+    function normalizeDateLoose(value){
+      if(value == null) return '';
+      if(value instanceof Date) return fmtDate(value);
+      const str = String(value).trim();
+      if(!str) return '';
+      if(/^\d{10}$/.test(str)) return fmtDate(new Date(Number(str) * 1000));
+      if(/^\d{13}$/.test(str)) return fmtDate(new Date(Number(str)));
+      const cleaned = str.replace(/\//g,'-').replace('T',' ').slice(0, 19);
+      const dt = new Date(cleaned);
+      if(!Number.isNaN(dt.getTime())) return fmtDate(dt);
+      const justDate = cleaned.match(/^(\d{4}-\d{1,2}-\d{1,2})/);
+      if(justDate) return justDate[1].split('-').map((x, i) => i === 0 ? x : x.padStart(2,'0')).join('-');
+      return '';
+    }
+
+    function addDays(dateStr, days){
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return fmtDate(d);
+    }
+
+    function money(n){
+      return Number(n || 0).toLocaleString('zh-TW', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+    }
+
+    function pnlClass(v){ return v > 0 ? 'up' : v < 0 ? 'down' : 'flat'; }
+
+    function getGate(){
+      const attitude = els.attitude.value;
+      if(attitude === '禁止進場'){
+        return { type:'no', title:'禁止進場', desc:'今天你自己都說不准，模擬器就不幫你偷偷衝。', canEnter:false, ratio:0 };
       }
-      rows.sort((a,b)=>a.ts-b.ts);
-      rows.forEach((row, idx)=>{
-        const prev = rows[idx-1];
-        row.prevClose = prev ? prev.close : row.open;
-        row.chg = +(row.close - row.prevClose).toFixed(2);
-        row.chgPct = row.prevClose ? +(((row.close - row.prevClose) / row.prevClose) * 100).toFixed(2) : 0;
+      if(attitude === '只觀察不追'){
+        return { type:'no', title:'只觀察不追', desc:'今天先看戲，不下場。', canEnter:false, ratio:0 };
+      }
+      if(attitude === '可小量試單'){
+        return { type:'ok', title:'可進場', desc:'小量試單模式，投入金額只吃 50%。', canEnter:true, ratio:0.5 };
+      }
+      return { type:'ok', title:'可進場', desc:'正常進場模式，投入金額吃 100%。', canEnter:true, ratio:1 };
+    }
+
+    function renderGate(){
+      const gate = getGate();
+      els.gateBox.className = `gate ${gate.canEnter ? 'ok' : 'no'}`;
+      els.gateBox.innerHTML = `
+        <div>
+          <div class="gate-title">${gate.title}</div>
+          <div class="gate-desc">${gate.desc}</div>
+        </div>
+        <div class="pill">${gate.canEnter ? `投入 ${Math.round(gate.ratio*100)}%` : '今日不下單'}</div>
+      `;
+      els.summaryGate.textContent = gate.title;
+      els.summaryGate.className = `summary-val ${gate.canEnter ? 'up' : 'down'}`;
+      els.summaryGateDesc.textContent = gate.desc;
+    }
+
+    function buildYahooUrl(symbol, startDate, endDate){
+      const p1 = Math.floor(new Date(startDate + 'T00:00:00').getTime()/1000);
+      const p2 = Math.floor(new Date(endDate + 'T23:59:59').getTime()/1000);
+      return `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?period1=${p1}&period2=${p2}&interval=1d&includePrePost=false&events=div%2Csplits`;
+    }
+
+    function resolveByPath(obj, path){
+      if(!path) return obj;
+      return path.split('.').reduce((acc, key) => (acc && acc[key] != null ? acc[key] : undefined), obj);
+    }
+
+    async function safeFetchJson(url, options = {}, timeoutMs = 12000){
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function toUnixSeconds(dateStr, endOfDay = false){
+      const d = new Date(`${dateStr}T${endOfDay ? '23:59:59' : '00:00:00'}`);
+      return Math.floor(d.getTime() / 1000);
+    }
+
+    function normalizeWorkerBase(raw){
+      const input = String(raw || '').trim();
+      if(!input) return '';
+      try {
+        const url = new URL(input);
+        return `${url.origin}`;
+      } catch (_) {
+        return input.replace(/\/+$/, '').replace(/\/(tech|yahoo-proxy).*$/i, '');
+      }
+    }
+
+    function buildWorkerUrl(path, params = {}){
+      const base = normalizeWorkerBase(WORKER_CONFIG.baseUrl);
+      if(!base) throw new Error('WORKER_CONFIG.baseUrl 尚未設定');
+      const url = new URL(path, `${base}/`);
+      Object.entries(params).forEach(([k,v]) => {
+        if(v != null && v !== '') url.searchParams.set(k, v);
       });
-      return rows;
+      return url.toString();
     }
 
-    async function fetchFiveRows(){
-      const code = $('code').value.trim();
-      const signalDate = $('signalDate').value;
-      const workerBase = $('workerBase').value.trim().replace(/\/$/, '');
-      if(!code) throw new Error('股票代號不能空白');
-      if(!signalDate) throw new Error('訊號日期不能空白');
-      if(!workerBase) throw new Error('Worker Base URL 不能空白');
-
-      const period1 = dateToTs(shiftDate(signalDate, -7));
-      const period2 = dateToTs(shiftDate(signalDate, 20), true);
-      const url = `${workerBase}/yahoo-proxy?symbol=${encodeURIComponent(code)}&period1=${period1}&period2=${period2}&interval=1d`;
-      const res = await fetch(url);
-      const raw = await res.json().catch(() => null);
-      if(!res.ok) throw new Error(raw?.error || `抓資料失敗 (${res.status})`);
-      if(raw?.ok === false) throw new Error(raw?.error || 'Worker 回傳失敗');
-      const allRows = normalizeYahooRows(raw);
-      if(!allRows.length) throw new Error('Worker 有回來，但沒有可用日 K');
-
-      const futureRows = allRows.filter(r => r.date > signalDate).slice(0, 5);
-      if(futureRows.length < 5){
-        throw new Error(`抓到的 T+1 ~ T+5 不足，目前只有 ${futureRows.length} 天。`);
-      }
-
-      state.prevRows = allRows;
-      state.rows = futureRows;
-      state.lastFetchMeta = { code, signalDate, workerBase, period1, period2 };
-      return futureRows;
+    function extractYahooBarsFromPayload(payload){
+      const raw = payload?.data?.chart ? payload.data : payload;
+      const result = raw?.chart?.result?.[0];
+      const timestamps = result?.timestamp || [];
+      const quote = result?.indicators?.quote?.[0] || {};
+      const opens = quote.open || [];
+      const highs = quote.high || [];
+      const lows = quote.low || [];
+      const closes = quote.close || [];
+      return timestamps.map((ts, i) => ({
+        date: fmtDate(new Date(ts * 1000)),
+        open: Number(opens[i]),
+        high: Number(highs[i]),
+        low: Number(lows[i]),
+        close: Number(closes[i])
+      })).filter(b => b.date && [b.open,b.high,b.low,b.close].every(v => Number.isFinite(v)));
     }
 
-    function renderDays(){
-      const box = $('days');
-      if(!state.rows.length){
-        box.innerHTML = `<div class="empty" style="grid-column:1/-1">還沒抓資料。先按一下上面的藍色按鈕，我再開始表演。</div>`;
+    async function fetchBarsFromWorker(rawSymbol, signalDate){
+      const endDate = addDays(signalDate, 20);
+      const symbol = isTwLikeSymbol(rawSymbol) ? getTwBaseSymbol(rawSymbol) : String(rawSymbol || '').trim().toUpperCase();
+      const url = buildWorkerUrl(WORKER_CONFIG.yahooProxyPath || '/yahoo-proxy', {
+        symbol,
+        period1: toUnixSeconds(signalDate, false),
+        period2: toUnixSeconds(endDate, true),
+        interval: '1d'
+      });
+      const payload = await safeFetchJson(url, {
+        method: 'GET',
+        headers: WORKER_CONFIG.headers || {}
+      }, WORKER_CONFIG.timeoutMs || 12000);
+      if(payload?.ok === false) throw new Error(payload?.error || 'Worker 回傳失敗');
+      const allBars = extractYahooBarsFromPayload(payload);
+      if(!allBars.length) throw new Error('Worker 有回應，但沒有可用 K 棒資料');
+      const nextBars = allBars.filter(b => b.date > signalDate).slice(0, 5);
+      if(nextBars.length < 5) throw new Error('Worker 抓到的有效交易日不足 5 天');
+      const resolvedSymbol = payload?.symbol || payload?.requestedSymbol || symbol;
+      return { bars: nextBars, source: `Worker /yahoo-proxy (${resolvedSymbol})` };
+    }
+
+    async function fetchBarsFromYahoo(rawSymbol, signalDate){
+      const symbol = normalizeYahooSymbol(rawSymbol);
+      const endDate = addDays(signalDate, 20);
+      const url = buildYahooUrl(symbol, signalDate, endDate);
+      const json = await safeFetchJson(url, {}, 12000);
+      const allBars = extractYahooBarsFromPayload(json);
+      const nextBars = allBars.filter(b => b.date > signalDate).slice(0, 5);
+      if(nextBars.length < 5) throw new Error('Yahoo 抓到的有效交易日不足 5 天');
+      return { bars: nextBars, source: `Yahoo (${symbol})` };
+    }
+
+    async function fetchWorkerTechSnapshot(rawSymbol, signalDate){
+      try {
+        const symbol = isTwLikeSymbol(rawSymbol) ? getTwBaseSymbol(rawSymbol) : String(rawSymbol || '').trim().toUpperCase();
+        const url = buildWorkerUrl(WORKER_CONFIG.techPath || '/tech', {
+          code: symbol,
+          date: signalDate
+        });
+        const payload = await safeFetchJson(url, {
+          method: 'GET',
+          headers: WORKER_CONFIG.headers || {}
+        }, 8000);
+        const item = payload?.items?.[0];
+        if(item?.ok) return item;
+      } catch (_) {}
+      return null;
+    }
+
+    async function fetchBars(){
+      const rawSymbol = els.symbol.value.trim();
+      const signalDate = els.signalDate.value;
+      if(!rawSymbol || !signalDate){
+        alert('請先填股票代號與日期。');
         return;
       }
-      box.innerHTML = state.rows.map((row, idx) => `
-        <div class="day-card" style="animation-delay:${idx * 80}ms">
-          <div class="day-top">
-            <div class="day-name">${dayName(idx)}</div>
-            <div class="day-date">${row.date}</div>
-          </div>
-          <div class="day-close ${clsByNum(row.chg)}">${fmtMoney(row.close)}</div>
-          <div class="day-chg ${clsByNum(row.chg)}">${labelByNum(row.chg)} (${Math.abs(row.chgPct).toFixed(2)}%)</div>
-          <div class="day-meta">
-            <div class="mini"><div class="kk">Open</div><div class="vv">${fmtMoney(row.open)}</div></div>
-            <div class="mini"><div class="kk">High</div><div class="vv">${fmtMoney(row.high)}</div></div>
-            <div class="mini"><div class="kk">Low</div><div class="vv">${fmtMoney(row.low)}</div></div>
-            <div class="mini"><div class="kk">Close</div><div class="vv">${fmtMoney(row.close)}</div></div>
-          </div>
-        </div>
-      `).join('');
-    }
+      renderGate();
+      els.fetchStatus.textContent = '抓資料中…';
+      state.bars = [];
+      state.results = [];
+      renderDayPills();
+      renderSummary();
+      renderPlans();
+      renderTracks();
 
-    function simulatePlan(plan){
-      const rows = state.rows;
-      if(!rows.length) throw new Error('沒有五日資料');
-      const capital = Number($('capital').value || 0);
-      if(!Number.isFinite(capital) || capital <= 0) throw new Error('台幣金額要大於 0');
+      const errors = [];
 
-      const entryPrice = rows[0].open;
-      const shares = capital / entryPrice;
-      const halfShares = shares / 2;
-      const halfPrice = +(entryPrice * (1 - plan.half / 100)).toFixed(2);
-      const fullPrice = +(entryPrice * (1 - plan.full / 100)).toFixed(2);
+      try {
+        let result = null;
 
-      let remaining = shares;
-      let realized = 0;
-      let halfDone = false;
-      let exitReason = '第 5 天強制賣';
-      let exitDate = rows[rows.length - 1].date;
-      let exitPrice = rows[rows.length - 1].close;
-      const traces = [];
-
-      for(let i = 0; i < rows.length; i++){
-        const row = rows[i];
-        let action = '持有';
-        let note = '未觸發';
-        let pill = 'pill-hold';
-
-        if(remaining > 0 && row.low <= fullPrice){
-          realized += remaining * fullPrice;
-          remaining = 0;
-          action = '全賣';
-          note = `觸發 ${plan.full}% 全賣`; 
-          pill = 'pill-full';
-          exitReason = `${plan.full}% 全賣`;
-          exitDate = row.date;
-          exitPrice = fullPrice;
-          traces.push({ day: dayName(i), date: row.date, low: row.low, close: row.close, action, note, pill });
-          break;
-        }
-
-        if(remaining > 0 && !halfDone && row.low <= halfPrice){
-          realized += halfShares * halfPrice;
-          remaining -= halfShares;
-          halfDone = true;
-          action = '減半';
-          note = `觸發 ${plan.half}% 減半`; 
-          pill = 'pill-half';
-        }
-
-        if(i === rows.length - 1 && remaining > 0){
-          realized += remaining * row.close;
-          remaining = 0;
-          exitReason = '第 5 天強制賣';
-          exitDate = row.date;
-          exitPrice = row.close;
-          if(action === '減半'){
-            action = '減半＋結算';
-            note += `；第 5 天收盤 ${fmtMoney(row.close)} 結算剩餘部位`;
-            pill = 'pill-force';
-          }else{
-            action = '結算';
-            note = `第 5 天收盤 ${fmtMoney(row.close)} 強制結算`;
-            pill = 'pill-force';
+        if(WORKER_CONFIG.enabled && WORKER_CONFIG.baseUrl){
+          try {
+            result = await fetchBarsFromWorker(rawSymbol, signalDate);
+          } catch (err) {
+            errors.push(`Worker：${err.message}`);
           }
         }
 
-        traces.push({ day: dayName(i), date: row.date, low: row.low, close: row.close, action, note, pill });
+        if(!result){
+          try {
+            result = await fetchBarsFromYahoo(rawSymbol, signalDate);
+          } catch (err) {
+            errors.push(`Yahoo：${err.message}`);
+          }
+        }
+
+        if(!result){
+          throw new Error(errors.join(' ｜ ') || '未知錯誤');
+        }
+
+        state.bars = result.bars;
+        state.selectedDay = 0;
+        state.fetchedSymbol = rawSymbol.toUpperCase();
+        state.dataSource = result.source;
+        renderDayPills();
+
+        const tech = WORKER_CONFIG.enabled && WORKER_CONFIG.baseUrl
+          ? await fetchWorkerTechSnapshot(rawSymbol, signalDate)
+          : null;
+        const techNote = tech
+          ? `｜Tech快照 MA20:${tech.ma20 ?? '--'} hist:${tech.hist ?? '--'} volRatio:${tech.volRatio ?? '--'}`
+          : '';
+
+        els.fetchStatus.textContent = `已抓到 ${state.fetchedSymbol} 的 T+1 ~ T+5（來源：${result.source}）${techNote}`;
+        simulateAll();
+      } catch(err){
+        console.error(err);
+        state.dataSource = '';
+        els.fetchStatus.textContent = '抓資料失敗';
+        alert(`抓資料失敗：${err.message}
+
+你貼的 Worker 其實要用 /yahoo-proxy 拿 D1~D5；/tech 只能拿技術指標，不能直接餵這個模擬器。`);
+      }
+    }
+
+    function renderDayPills(){
+      if(!state.bars.length){
+        els.dayPills.innerHTML = `<div class="empty" style="grid-column:1/-1">還沒抓到 D1 ~ D5。你按一下「自動抓 5 日資料」，這裡就會開始講人話。</div>`;
+        return;
+      }
+      els.dayPills.innerHTML = state.bars.map((bar, idx) => {
+        const delta = Number((bar.close - bar.open).toFixed(2));
+        const cls = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+        const text = delta > 0 ? `漲 ${Math.abs(delta).toFixed(2)}` : delta < 0 ? `跌 ${Math.abs(delta).toFixed(2)}` : '平盤';
+        return `
+          <button class="day-pill ${state.selectedDay===idx?'active':''}" data-day-index="${idx}">
+            <div class="day-top">
+              <div class="day-name">${idx+1}日</div>
+              <div class="day-date">${bar.date}</div>
+            </div>
+            <div>
+              <div class="day-close">${money(bar.close)}</div>
+              <div class="day-change ${cls}">${text}</div>
+            </div>
+            <div class="day-ohlc">
+              <span>開 <b>${money(bar.open)}</b></span>
+              <span>高 <b>${money(bar.high)}</b></span>
+              <span>低 <b>${money(bar.low)}</b></span>
+              <span>收 <b>${money(bar.close)}</b></span>
+            </div>
+          </button>
+        `;
+      }).join('');
+      els.dayPills.querySelectorAll('.day-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.selectedDay = Number(btn.dataset.dayIndex);
+          renderDayPills();
+          renderTracks();
+        });
+      });
+    }
+
+    function simulatePlan(plan){
+      const gate = getGate();
+      const capitalInput = Number(els.capital.value || 0);
+      const usedCapital = Math.floor(capitalInput * gate.ratio);
+      const entryBar = state.bars[0];
+      if(!gate.canEnter || !entryBar || usedCapital <= 0){
+        return {
+          ...plan,
+          canEnter:false,
+          usedCapital,
+          entryPrice: entryBar?.open || 0,
+          shares:0,
+          halfPrice:0,
+          fullPrice:0,
+          finalDate:'--',
+          finalPrice:0,
+          pnlAmount:0,
+          pnlPct:0,
+          exitReason:'未進場',
+          halfTriggered:false,
+          tracks:state.bars.map((b, i) => ({ day:i+1, ...b, action:'不進場', desc:'今天不下單。' }))
+        };
       }
 
-      const pnl = +(realized - capital).toFixed(2);
-      const pct = +((pnl / capital) * 100).toFixed(2);
+      const entryPrice = entryBar.open;
+      let shares = Math.floor(usedCapital / entryPrice);
+      if(shares <= 0){
+        return {
+          ...plan,
+          canEnter:false,
+          usedCapital,
+          entryPrice,
+          shares:0,
+          halfPrice: entryPrice * (1-plan.halfPct),
+          fullPrice: entryPrice * (1-plan.fullPct),
+          finalDate:'--',
+          finalPrice:0,
+          pnlAmount:0,
+          pnlPct:0,
+          exitReason:'金額不足',
+          halfTriggered:false,
+          tracks:state.bars.map((b, i) => ({ day:i+1, ...b, action:'不進場', desc:'台幣太少，連一張影子都買不到。' }))
+        };
+      }
+
+      const halfPrice = Number((entryPrice * (1 - plan.halfPct)).toFixed(2));
+      const fullPrice = Number((entryPrice * (1 - plan.fullPct)).toFixed(2));
+      const initialShares = shares;
+      let remainingShares = shares;
+      let cash = usedCapital - (shares * entryPrice);
+      let halfTriggered = false;
+      let finalDate = state.bars[4].date;
+      let finalPrice = state.bars[4].close;
+      let exitReason = '第 5 天強制賣';
+      const tracks = [];
+
+      for(let i=0;i<state.bars.length;i++){
+        const bar = state.bars[i];
+        let action = '持有';
+        let desc = '未觸發';
+
+        if(remainingShares <= 0){
+          action = '已離場';
+          desc = '前面已經出場完畢。';
+          tracks.push({ day:i+1, ...bar, action, desc });
+          continue;
+        }
+
+        if(bar.low <= fullPrice){
+          cash += remainingShares * fullPrice;
+          action = '全賣';
+          desc = `${i+1}日低點碰到全賣線 ${money(fullPrice)}，剩餘部位全部出場。`;
+          finalDate = bar.date;
+          finalPrice = fullPrice;
+          exitReason = '全賣停損';
+          remainingShares = 0;
+          tracks.push({ day:i+1, ...bar, action, desc });
+          for(let j=i+1;j<state.bars.length;j++){
+            tracks.push({ day:j+1, ...state.bars[j], action:'已離場', desc:'前面已經出場完畢。' });
+          }
+          break;
+        }
+
+        if(!halfTriggered && bar.low <= halfPrice){
+          let halfShares = Math.floor(initialShares / 2);
+          if(halfShares <= 0) halfShares = remainingShares;
+          halfShares = Math.min(halfShares, remainingShares);
+          cash += halfShares * halfPrice;
+          remainingShares -= halfShares;
+          halfTriggered = true;
+          action = '減半';
+          desc = `${i+1}日低點碰到減半線 ${money(halfPrice)}，先砍半倉。`;
+          if(i === state.bars.length - 1 && remainingShares > 0){
+            cash += remainingShares * bar.close;
+            finalDate = bar.date;
+            finalPrice = bar.close;
+            exitReason = '第 5 天強制賣';
+            remainingShares = 0;
+            desc += ` 同日收盤 ${money(bar.close)} 把剩餘部位結算。`;
+          }
+          tracks.push({ day:i+1, ...bar, action, desc });
+          continue;
+        }
+
+        if(i === state.bars.length - 1){
+          cash += remainingShares * bar.close;
+          action = '結算';
+          desc = `第 5 天收盤 ${money(bar.close)} 強制結算。`;
+          finalDate = bar.date;
+          finalPrice = bar.close;
+          exitReason = '第 5 天強制賣';
+          remainingShares = 0;
+        }
+
+        tracks.push({ day:i+1, ...bar, action, desc });
+      }
+
+      const invested = initialShares * entryPrice;
+      const pnlAmount = Number((cash - invested).toFixed(2));
+      const pnlPct = invested > 0 ? Number(((pnlAmount / invested) * 100).toFixed(2)) : 0;
+
       return {
-        plan,
-        entryDate: rows[0].date,
+        ...plan,
+        canEnter:true,
+        usedCapital,
         entryPrice,
-        capital,
+        shares:initialShares,
         halfPrice,
         fullPrice,
-        exitDate,
-        exitPrice,
+        finalDate,
+        finalPrice,
+        pnlAmount,
+        pnlPct,
         exitReason,
-        pnl,
-        pct,
-        halfDone,
-        traces,
+        halfTriggered,
+        tracks
       };
     }
 
-    function renderResults(){
-      const summary = $('summaryGrid');
-      const result = $('resultGrid');
-      const trace = $('traceWrap');
-
-      if(!state.results.length){
-        const empty = `<div class="empty" style="grid-column:1/-1">還沒跑方案。你先讓我吃到五日資料，我才知道哪套止損比較會活。</div>`;
-        summary.innerHTML = empty;
-        result.innerHTML = empty;
-        trace.innerHTML = empty;
+    function simulateAll(){
+      renderGate();
+      if(!state.bars.length){
+        alert('先抓 D1 ~ D5。沒有米，模擬器也煮不出飯。');
         return;
       }
+      state.results = plans.map(simulatePlan);
+      renderSummary();
+      renderPlans();
+      renderTracks();
+    }
 
-      const best = [...state.results].sort((a,b)=>b.pnl-a.pnl)[0];
-      const entryOpen = state.rows[0]?.open || 0;
-      summary.innerHTML = `
-        <div class="metric"><div class="k">開關狀態</div><div class="v blue">可進場</div><div class="s">這版先專心測離場，不在這裡裝市場老師。</div></div>
-        <div class="metric"><div class="k">比較方案</div><div class="v blue">${state.results.length}</div><div class="s">A / B / C 同時跑</div></div>
-        <div class="metric"><div class="k">最佳方案</div><div class="v blue">${best.plan.name}</div><div class="s">誰比較會活，一眼看穿。</div></div>
-        <div class="metric"><div class="k">D1 進場價</div><div class="v ${clsByNum(0)}">${fmtMoney(entryOpen)}</div><div class="s">一日 Open 當進場價</div></div>
-      `;
+    function renderSummary(){
+      if(!state.results.length){
+        els.bestPlan.textContent = '--';
+        els.bestPlanDesc.textContent = '還沒跑。';
+        els.bestReturn.textContent = '--';
+        els.bestReturnDesc.textContent = '還沒跑。';
+        return;
+      }
+      const sorted = [...state.results].sort((a,b) => b.pnlAmount - a.pnlAmount);
+      const best = sorted[0];
+      els.bestPlan.textContent = best.name;
+      els.bestPlan.className = 'summary-val';
+      els.bestPlanDesc.textContent = `${best.rule}；${best.exitReason}`;
+      els.bestReturn.innerHTML = `<span class="${pnlClass(best.pnlPct)}">${best.pnlPct > 0 ? '+' : ''}${best.pnlPct.toFixed(2)}%</span>`;
+      els.bestReturnDesc.textContent = `損益 ${money(best.pnlAmount)} 元；最終離場 ${best.finalDate}`;
+    }
 
-      result.innerHTML = state.results.map((r)=>{
-        const badgeClass = r.exitReason.includes('全賣') ? 'badge-stop' : r.exitReason.includes('強制') ? 'badge-force' : 'badge-hold';
+    function renderPlans(){
+      if(!state.results.length){
+        els.planGrid.innerHTML = `<div class="empty" style="grid-column:1/-1">先抓資料再跑方案，這裡才會開始吵架。</div>`;
+        return;
+      }
+      const bestName = [...state.results].sort((a,b)=>b.pnlAmount-a.pnlAmount)[0].name;
+      els.planGrid.innerHTML = state.results.map(r => {
+        const retCls = pnlClass(r.pnlPct);
+        let badge = '未進場';
+        if(r.canEnter){
+          badge = r.exitReason === '全賣停損' ? '全賣停損' : r.halfTriggered ? '先減半' : '第 5 天強制賣';
+        }
         return `
-          <div class="plan-card">
+          <div class="plan-card ${r.name===bestName?'best':''}">
             <div class="plan-top">
               <div>
-                <div class="plan-name">${r.plan.name}</div>
-                <div class="plan-rule">-${r.plan.half}% 減半 / -${r.plan.full}% 全賣</div>
+                <div class="plan-name">${r.name}</div>
+                <div class="plan-rule">${r.rule}</div>
               </div>
-              <div class="plan-badge ${badgeClass}">${r.exitReason}</div>
+              <div class="badge">${badge}</div>
             </div>
-            <div class="plan-pct ${clsByNum(r.pct)}">${fmtPct(r.pct)}</div>
-            <div class="plan-pnl ${clsByNum(r.pnl)}">${r.pnl >= 0 ? '+' : ''}${fmtMoney(r.pnl)} 元</div>
+            <div class="plan-return ${retCls}">${r.pnlPct > 0 ? '+' : ''}${r.pnlPct.toFixed(2)}%</div>
             <div class="plan-meta">
-              <div class="meta-box"><div class="mk">進場日 / 價</div><div class="mv">${r.entryDate}<br>${fmtMoney(r.entryPrice)}</div></div>
-              <div class="meta-box"><div class="mk">最終離場</div><div class="mv">${r.exitDate}<br>${fmtMoney(r.exitPrice)}</div></div>
-              <div class="meta-box"><div class="mk">減半線</div><div class="mv">${fmtMoney(r.halfPrice)}</div></div>
-              <div class="meta-box"><div class="mk">全賣線</div><div class="mv">${fmtMoney(r.fullPrice)}</div></div>
+              <div>進場價<br><b>${money(r.entryPrice)}</b></div>
+              <div>投入金額<br><b>${money(r.usedCapital)}</b></div>
+              <div>減半線<br><b>${money(r.halfPrice)}</b></div>
+              <div>全賣線<br><b>${money(r.fullPrice)}</b></div>
+              <div>最終離場<br><b>${r.finalDate}<br>${money(r.finalPrice)}</b></div>
+              <div>台幣損益<br><b class="${retCls}">${r.pnlAmount > 0 ? '+' : ''}${money(r.pnlAmount)}</b></div>
             </div>
           </div>
         `;
       }).join('');
+    }
 
-      trace.innerHTML = state.results.map((r)=>`
-        <div class="trace-card">
-          <div class="trace-title">${r.plan.name}</div>
+    function actionTag(action){
+      if(action === '減半') return '<span class="mini-tag tag-half">減半</span>';
+      if(action === '全賣') return '<span class="mini-tag tag-sell">全賣</span>';
+      if(action === '結算') return '<span class="mini-tag tag-force">結算</span>';
+      if(action === '已離場') return '<span class="mini-tag tag-sell">已離場</span>';
+      if(action === '不進場') return '<span class="mini-tag tag-hold">不進場</span>';
+      return '<span class="mini-tag tag-hold">持有</span>';
+    }
+
+    function renderTracks(){
+      if(!state.results.length){
+        els.trackWrap.innerHTML = `<div class="empty">先跑方案，右邊這塊才會開始揭露死因。</div>`;
+        return;
+      }
+      els.trackWrap.innerHTML = state.results.map(r => `
+        <div class="track-card">
+          <div class="track-title">
+            <div class="track-chip">${r.name}｜${r.rule}</div>
+          </div>
           <table>
             <thead>
               <tr>
@@ -536,14 +953,14 @@
               </tr>
             </thead>
             <tbody>
-              ${r.traces.map(t=>`
-                <tr>
-                  <td>${t.day}</td>
+              ${r.tracks.map((t, idx) => `
+                <tr class="${state.selectedDay===idx?'active-day':''}">
+                  <td>${idx+1}日</td>
                   <td>${t.date}</td>
-                  <td>${fmtMoney(t.low)}</td>
-                  <td>${fmtMoney(t.close)}</td>
-                  <td><span class="pill ${t.pill}">${t.action}</span></td>
-                  <td>${t.note}</td>
+                  <td>${money(t.low)}</td>
+                  <td>${money(t.close)}</td>
+                  <td>${actionTag(t.action)}</td>
+                  <td>${t.desc}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -552,123 +969,131 @@
       `).join('');
     }
 
-    function buildRecord(){
-      if(!state.results.length) throw new Error('還沒跑方案，記錄個寂寞。');
-      const best = [...state.results].sort((a,b)=>b.pnl-a.pnl)[0];
-      return {
-        id: Date.now(),
-        code: $('code').value.trim(),
-        signalDate: $('signalDate').value,
-        capital: Number($('capital').value || 0),
-        regime: $('regime').value,
-        attitude: $('attitude').value,
-        note: $('note').value.trim(),
-        workerBase: $('workerBase').value.trim(),
-        bestPlan: best.plan.name,
-        bestPct: best.pct,
-        bestPnl: best.pnl,
-        results: state.results,
-        rows: state.rows,
-        createdAt: new Date().toISOString(),
-      };
+    function getTraceTags(){
+      return [...document.querySelectorAll('.check input:checked')].map(x => x.value);
     }
 
-    function getRecords(){
-      try{ return JSON.parse(localStorage.getItem('ajie-entry-sim-records') || '[]'); }
-      catch(_){ return []; }
-    }
-    function setRecords(list){ localStorage.setItem('ajie-entry-sim-records', JSON.stringify(list)); }
-
-    function renderRecords(){
-      const box = $('recordList');
-      const list = getRecords();
-      if(!list.length){
-        box.innerHTML = `<div class="empty">目前還沒有紀錄。等你跑出一筆，我再開始當你的記帳員。</div>`;
+    function saveRecord(){
+      if(!state.results.length){
+        alert('先跑方案，不然紀錄簿只會記到你的空氣。');
         return;
       }
-      box.innerHTML = list.sort((a,b)=>b.id-a.id).map(item=>`
-        <div class="record-item">
-          <div class="record-row">
-            <div>
-              <div class="record-name">${item.code}｜${item.bestPlan}</div>
-              <div class="record-sub">${item.signalDate} ・ ${item.regime} ・ ${item.attitude}</div>
-            </div>
-            <div class="record-name ${clsByNum(item.bestPct)}">${fmtPct(item.bestPct)}</div>
-          </div>
-          <div class="record-sub">投入 ${fmtMoney(item.capital)} 元 ／ 損益 ${item.bestPnl >= 0 ? '+' : ''}${fmtMoney(item.bestPnl)} 元</div>
-          ${item.note ? `<div class="record-sub" style="margin-top:6px">備註：${item.note}</div>` : ''}
-        </div>
+      const best = [...state.results].sort((a,b)=>b.pnlAmount-a.pnlAmount)[0];
+      const row = {
+        time: new Date().toLocaleString('zh-TW'),
+        symbol: els.symbol.value.trim(),
+        date: els.signalDate.value,
+        capital: Number(els.capital.value || 0),
+        marketType: els.marketType.value,
+        attitude: els.attitude.value,
+        bestPlan: best.name,
+        bestPnlAmount: best.pnlAmount,
+        bestPnlPct: best.pnlPct,
+        traceTags: getTraceTags().join(' / '),
+        note: [
+          state.dataSource ? `資料源:${state.dataSource}` : '',
+          els.currencyNote.value.trim(),
+          els.note.value.trim(),
+          els.reasonNote.value.trim()
+        ].filter(Boolean).join(' ｜ ')
+      };
+      state.logs.unshift(row);
+      localStorage.setItem('ajie_entry_sim_logs_v1_3', JSON.stringify(state.logs));
+      renderLogs();
+      alert('已加入紀錄簿。這筆屍體有被妥善保存。');
+    }
+
+    function renderLogs(){
+      if(!state.logs.length){
+        els.logBody.innerHTML = `<tr><td colspan="11" class="empty">紀錄簿目前是乾淨的。這不是壞事，代表你還沒亂死。</td></tr>`;
+        return;
+      }
+      els.logBody.innerHTML = state.logs.map(r => `
+        <tr>
+          <td>${r.time}</td>
+          <td>${r.symbol}</td>
+          <td>${r.date}</td>
+          <td>${money(r.capital)}</td>
+          <td>${r.marketType}</td>
+          <td>${r.attitude}</td>
+          <td>${r.bestPlan}</td>
+          <td class="${pnlClass(r.bestPnlAmount)}">${r.bestPnlAmount > 0 ? '+' : ''}${money(r.bestPnlAmount)}</td>
+          <td class="${pnlClass(r.bestPnlPct)}">${r.bestPnlPct > 0 ? '+' : ''}${r.bestPnlPct.toFixed(2)}%</td>
+          <td>${r.traceTags || '—'}</td>
+          <td>${r.note || '—'}</td>
+        </tr>
       `).join('');
     }
 
     function exportCsv(){
-      const list = getRecords();
-      if(!list.length) throw new Error('沒有紀錄可以匯出');
-      const lines = ['code,signalDate,capital,regime,attitude,bestPlan,bestPct,bestPnl,note'];
-      list.forEach(item=>{
-        const vals = [item.code,item.signalDate,item.capital,item.regime,item.attitude,item.bestPlan,item.bestPct,item.bestPnl,(item.note||'').replace(/,/g,'，')];
-        lines.push(vals.map(v=>`"${String(v ?? '')}"`).join(','));
-      });
-      const blob = new Blob(['\ufeff' + lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+      if(!state.logs.length){
+        alert('紀錄簿是空的，匯出會像傳空白考卷。');
+        return;
+      }
+      const headers = ['time','symbol','date','capital','marketType','attitude','bestPlan','bestPnlAmount','bestPnlPct','traceTags','note'];
+      const rows = state.logs.map(r => headers.map(h => {
+        const val = r[h] ?? '';
+        return `"${String(val).replaceAll('"','""')}"`;
+      }).join(','));
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'ajie_entry_records.csv';
+      a.download = 'ajie_entry_sim_logs_v1_3.csv';
       a.click();
       URL.revokeObjectURL(url);
     }
 
-    async function runFetch(){
-      try{
-        setStatus('正在去 Worker 抓 T+1 ~ T+5，先別催，電線還熱的。');
-        $('fetchBtn').disabled = true;
-        await fetchFiveRows();
-        renderDays();
-        setStatus(`抓到了：${state.rows[0].date} ～ ${state.rows[state.rows.length-1].date}，共 ${state.rows.length} 天。`, 'ok');
-      }catch(err){
-        state.rows = [];
-        renderDays();
-        renderResults();
-        setStatus(err.message || String(err), 'error');
-      }finally{
-        $('fetchBtn').disabled = false;
-      }
+    function clearAll(){
+      els.symbol.value = '';
+      els.signalDate.value = '';
+      els.capital.value = '';
+      els.attitude.value = '可積極進場';
+      els.marketType.value = '多頭主升盤';
+      els.currencyNote.value = '';
+      els.note.value = '';
+      els.reasonNote.value = '';
+      document.querySelectorAll('.check input').forEach(x => x.checked = false);
+      state.bars = [];
+      state.results = [];
+      state.selectedDay = 0;
+      state.dataSource = '';
+      els.fetchStatus.textContent = '尚未抓資料';
+      renderGate();
+      renderDayPills();
+      renderSummary();
+      renderPlans();
+      renderTracks();
     }
 
-    async function runSim(){
+    function loadLogs(){
       try{
-        if(!state.rows.length) await runFetch();
-        if(!state.rows.length) return;
-        state.results = PLANS.map(simulatePlan);
-        renderResults();
-        const best = [...state.results].sort((a,b)=>b.pnl-a.pnl)[0];
-        setStatus(`跑完了。現在暫時是 ${best.plan.name} 領先，損益 ${best.pnl >= 0 ? '+' : ''}${fmtMoney(best.pnl)} 元。`, 'ok');
-      }catch(err){
-        state.results = [];
-        renderResults();
-        setStatus(err.message || String(err), 'error');
-      }
+        state.logs = JSON.parse(localStorage.getItem('ajie_entry_sim_logs_v1_3') || localStorage.getItem('ajie_entry_sim_logs_v1_2') || localStorage.getItem('ajie_entry_sim_logs_v1_1') || '[]');
+      }catch(_){ state.logs = []; }
+      renderLogs();
     }
 
-    $('fetchBtn').addEventListener('click', runFetch);
-    $('simulateBtn').addEventListener('click', runSim);
-    $('saveBtn').addEventListener('click', ()=>{
-      try{
-        const list = getRecords();
-        list.push(buildRecord());
-        setRecords(list);
-        renderRecords();
-        setStatus(`已加入紀錄簿。現在共有 ${list.length} 筆。`, 'ok');
-      }catch(err){ setStatus(err.message || String(err), 'error'); }
+    els.fetchBtn.addEventListener('click', fetchBars);
+    els.runBtn.addEventListener('click', simulateAll);
+    els.saveBtn.addEventListener('click', saveRecord);
+    els.clearBtn.addEventListener('click', clearAll);
+    els.exportBtn.addEventListener('click', exportCsv);
+    els.clearLogBtn.addEventListener('click', () => {
+      if(!confirm('確定清空紀錄簿？這會把你辛苦累積的屍體全埋掉。')) return;
+      state.logs = [];
+      localStorage.removeItem('ajie_entry_sim_logs_v1_3');
+      localStorage.removeItem('ajie_entry_sim_logs_v1_2');
+      renderLogs();
     });
-    $('exportBtn').addEventListener('click', ()=>{
-      try{ exportCsv(); setStatus('CSV 匯出了。該算帳的，一筆都別想跑。', 'ok'); }
-      catch(err){ setStatus(err.message || String(err), 'error'); }
-    });
+    els.attitude.addEventListener('change', renderGate);
 
-    renderDays();
-    renderResults();
-    renderRecords();
+    renderGate();
+    renderDayPills();
+    renderSummary();
+    renderPlans();
+    renderTracks();
+    loadLogs();
   </script>
 </body>
 </html>
