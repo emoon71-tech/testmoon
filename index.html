@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>阿吉進場模擬器 V1</title>
+  <style>
+    :root{
+      --bg:#f4f8ff;
+      --bg-soft:#edf4ff;
+      --card:#ffffff;
+      --line:#dbe6ff;
+      --line-strong:#bfd3ff;
+      --text:#11213f;
+      --text-soft:#5f6f91;
+      --blue:#2d6df6;
+      --blue-deep:#1742a8;
+      --cyan:#52b6ff;
+      --green:#17b26a;
+      --red:#e5484d;
+      --amber:#f59e0b;
+      --shadow:0 16px 38px rgba(43,92,179,.12);
+      --shadow-soft:0 10px 26px rgba(68,112,191,.08);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:linear-gradient(180deg,#f7fbff 0%,#eef5ff 52%,#eaf1ff 100%);color:var(--text)}
+    body{min-height:100vh;padding:28px}
+    .shell{max-width:1440px;margin:0 auto;display:grid;gap:18px}
+
+    .hero{
+      position:relative;overflow:hidden;background:linear-gradient(135deg,#ffffff 0%,#f3f8ff 40%,#e9f2ff 100%);
+      border:1px solid rgba(190,212,255,.9);border-radius:32px;padding:28px 30px;box-shadow:var(--shadow);
+      animation:fadeUp .65s ease both;
+    }
+    .hero::before,.hero::after{
+      content:"";position:absolute;border-radius:999px;filter:blur(2px);pointer-events:none;
+    }
+    .hero::before{width:280px;height:280px;right:-80px;top:-70px;background:radial-gradient(circle,rgba(82,182,255,.22),transparent 70%);animation:floaty 7s ease-in-out infinite}
+    .hero::after{width:220px;height:220px;left:-70px;bottom:-90px;background:radial-gradient(circle,rgba(45,109,246,.18),transparent 70%);animation:floaty 9s ease-in-out infinite reverse}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#eff6ff;border:1px solid var(--line);color:var(--blue-deep);font-weight:700;font-size:12px;letter-spacing:.04em}
+    .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 0 0 8px rgba(82,182,255,.15);animation:pulse 2.1s ease-in-out infinite}
+    .hero-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;flex-wrap:wrap;position:relative;z-index:2}
+    .hero h1{margin:14px 0 10px;font-size:clamp(30px,4vw,46px);letter-spacing:-.03em;line-height:1.02}
+    .hero p{margin:0;color:var(--text-soft);font-size:15px;line-height:1.8;max-width:760px}
+    .hero-cards{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;position:relative;z-index:2}
+    .mini-chip{padding:10px 14px;border-radius:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(10px);border:1px solid rgba(191,211,255,.75);box-shadow:var(--shadow-soft);font-size:12px;color:var(--text-soft);display:flex;gap:8px;align-items:center}
+    .mini-chip b{color:var(--text)}
+
+    .grid-2{display:grid;grid-template-columns:1.15fr .95fr;gap:18px}
+    .card{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid rgba(191,211,255,.9);border-radius:var(--radius);box-shadow:var(--shadow-soft);padding:22px;animation:fadeUp .75s ease both}
+    .card h2{margin:0 0 16px;font-size:20px;letter-spacing:-.02em}
+    .card-sub{margin:-4px 0 16px;color:var(--text-soft);font-size:13px;line-height:1.7}
+
+    .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .field{display:grid;gap:7px}
+    .field label{font-size:12px;font-weight:700;color:var(--text-soft);letter-spacing:.03em}
+    .field input,.field select,.field textarea{
+      width:100%;border:1px solid var(--line);background:#fbfdff;color:var(--text);border-radius:16px;padding:13px 14px;font-size:14px;
+      outline:none;transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .field textarea{min-height:110px;resize:vertical;line-height:1.55}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(45,109,246,.12)}
+    .field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%, var(--blue) 50%),linear-gradient(135deg,var(--blue) 50%,transparent 50%);background-position:calc(100% - 18px) calc(1em + 4px),calc(100% - 13px) calc(1em + 4px);background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+    .full{grid-column:1 / -1}
+    .tiny{font-size:12px;color:var(--text-soft)}
+    .helper{margin-top:8px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#f2f7ff,#ecf4ff);border:1px dashed var(--line-strong);font-size:12px;color:var(--text-soft);line-height:1.7}
+
+    .action-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{border:none;border-radius:16px;padding:13px 18px;font-size:14px;font-weight:800;letter-spacing:.01em;cursor:pointer;transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;display:inline-flex;align-items:center;gap:10px}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn-primary{background:linear-gradient(135deg,var(--blue),#4f8bff);color:#fff;box-shadow:0 14px 24px rgba(45,109,246,.24)}
+    .btn-secondary{background:#fff;color:var(--blue-deep);border:1px solid var(--line-strong);box-shadow:var(--shadow-soft)}
+    .btn-success{background:linear-gradient(135deg,#17b26a,#1fd48a);color:#fff;box-shadow:0 14px 24px rgba(23,178,106,.22)}
+    .btn-ghost{background:#eef4ff;color:var(--blue-deep)}
+
+    .status-strip{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid transparent}
+    .badge .b-dot{width:8px;height:8px;border-radius:50%}
+    .badge.ok{background:#e9f9f0;color:#0f9152;border-color:#b9efd0}.badge.ok .b-dot{background:var(--green)}
+    .badge.warn{background:#fff8e8;color:#b56d00;border-color:#fde2aa}.badge.warn .b-dot{background:var(--amber)}
+    .badge.no{background:#fff0f1;color:#c7353c;border-color:#fec8cc}.badge.no .b-dot{background:var(--red)}
+    .badge.info{background:#eef5ff;color:var(--blue-deep);border-color:#cfe0ff}.badge.info .b-dot{background:var(--blue)}
+
+    .preview-table,.record-table,.timeline-table{width:100%;border-collapse:collapse}
+    .preview-wrap,.record-wrap,.timeline-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff}
+    .preview-table th,.preview-table td,.record-table th,.record-table td,.timeline-table th,.timeline-table td{padding:12px 12px;border-bottom:1px solid #edf2ff;text-align:left;font-size:13px;white-space:nowrap}
+    .preview-table th,.record-table th,.timeline-table th{position:sticky;top:0;background:#f8fbff;color:var(--text-soft);font-size:12px;z-index:1}
+    .preview-table tr:hover td,.record-table tr:hover td,.timeline-table tr:hover td{background:#fbfdff}
+
+    .results{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .plan-card{position:relative;padding:18px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(180deg,#ffffff,#f7fbff);overflow:hidden;transition:transform .18s ease, box-shadow .18s ease}
+    .plan-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft)}
+    .plan-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan));opacity:.92}
+    .plan-card h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .plan-card .sub{font-size:12px;color:var(--text-soft);margin-bottom:12px}
+    .metric{display:grid;gap:6px;margin-top:14px}
+    .metric-row{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+    .metric-row span:first-child{color:var(--text-soft)}
+    .big-return{font-size:36px;font-weight:900;letter-spacing:-.04em;margin:8px 0 10px}
+    .up{color:var(--red)}
+    .down{color:var(--green)}
+    .neutral{color:var(--text-soft)}
+    .plan-status{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800}
+    .plan-status.entered{background:#ecf7ff;color:var(--blue-deep)}
+    .plan-status.blocked{background:#fff6e9;color:#b56d00}
+    .plan-status.exit{background:#f1fff7;color:#0f9152}
+
+    .summary-box{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .summary-card{padding:16px;border-radius:18px;background:linear-gradient(180deg,#ffffff,#f6faff);border:1px solid var(--line);position:relative;overflow:hidden}
+    .summary-card::after{content:"";position:absolute;right:-28px;top:-28px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(82,182,255,.15),transparent 72%)}
+    .summary-card .lab{font-size:12px;color:var(--text-soft);font-weight:700}
+    .summary-card .num{margin-top:10px;font-size:28px;font-weight:900;letter-spacing:-.03em}
+
+    .check-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .check{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;transition:border-color .18s ease, background .18s ease}
+    .check:hover{border-color:var(--blue)}
+    .check input{width:16px;height:16px;accent-color:var(--blue)}
+    .record-tools{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+    .record-stats{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{padding:10px 14px;border-radius:999px;background:#eef5ff;border:1px solid var(--line-strong);font-size:12px;color:var(--text-soft)}
+    .pill b{color:var(--text)}
+    .delete-btn{border:none;background:#fff0f1;color:#c7353c;border-radius:12px;padding:8px 10px;font-weight:800;cursor:pointer}
+
+    .empty{padding:34px 18px;text-align:center;color:var(--text-soft);font-size:14px;line-height:1.8}
+    .hint-strong{font-weight:900;color:var(--blue-deep)}
+    .fade{animation:fadeUp .52s ease both}
+
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(1);opacity:.92}
+      50%{transform:scale(1.15);opacity:1}
+    }
+    @keyframes floaty{
+      0%,100%{transform:translateY(0) translateX(0)}
+      50%{transform:translateY(14px) translateX(-6px)}
+    }
+
+    @media (max-width:1120px){
+      .grid-2,.results{grid-template-columns:1fr}
+      .plan-grid,.summary-box,.check-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:760px){
+      body{padding:16px}
+      .field-grid,.field-grid.three,.plan-grid,.summary-box,.check-grid{grid-template-columns:1fr}
+      .hero{padding:22px}
+      .card{padding:18px}
+      .record-tools{align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> AJ ENTRY SIMULATOR</div>
+          <h1>阿吉進場模擬器 V1</h1>
+          <p>單筆輸入、五日模擬、完整止損、離場紀錄、事後追因。主引擎只管能不能進、怎麼出；戰爭、關稅、FOMC 這些全部丟去驗屍區，不讓模型吃髒東西。</p>
+          <div class="hero-cards">
+            <div class="mini-chip"><b>引擎</b> T+1 開盤進場</div>
+            <div class="mini-chip"><b>核心</b> 5日強制結算</div>
+            <div class="mini-chip"><b>比較器</b> A / B / C 三套停損</div>
+            <div class="mini-chip"><b>紀錄</b> 本機儲存離場結果</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>1. 模擬輸入</h2>
+        <div class="card-sub">這區只輸入當下知道的東西。MarketScore 與進場態度決定要不要進；五軸、盤種類與備註只是記錄，不污染主引擎。</div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="stockCode">股票代號</label>
+            <input id="stockCode" type="text" placeholder="例：2330" />
+          </div>
+          <div class="field">
+            <label for="stockName">股票名稱（可空）</label>
+            <input id="stockName" type="text" placeholder="例：台積電" />
+          </div>
+          <div class="field">
+            <label for="signalDate">訊號日期</label>
+            <input id="signalDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="rankSelect">排名</label>
+            <select id="rankSelect">
+              <option>Top1</option><option>Top2</option><option>Top3</option><option>Top4</option><option>Top5</option><option>Top6</option><option>Top7</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="marketScore">MarketScore</label>
+            <input id="marketScore" type="number" step="0.1" placeholder="例：45" />
+          </div>
+          <div class="field">
+            <label for="planSelect">停損方案</label>
+            <select id="planSelect">
+              <option value="ALL">全部比較</option>
+              <option value="A">A：-5% 減半 / -7% 全賣</option>
+              <option value="B">B：-3% 減半 / -5% 全賣</option>
+              <option value="C">C：-1.5% 減半 / -3% 全賣</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-grid three" style="margin-top:14px;">
+          <div class="field">
+            <label for="axisDirection">方向</label>
+            <select id="axisDirection"><option>未分類</option><option>多</option><option>空</option><option>盤整</option></select>
+          </div>
+          <div class="field">
+            <label for="axisVolatility">波動</label>
+            <select id="axisVolatility"><option>未分類</option><option>低</option><option>中</option><option>高</option></select>
+          </div>
+          <div class="field">
+            <label for="axisVolume">量能</label>
+            <select id="axisVolume"><option>未分類</option><option>縮量</option><option>正常</option><option>放量</option></select>
+          </div>
+          <div class="field">
+            <label for="axisStructure">結構</label>
+            <select id="axisStructure"><option>未分類</option><option>主升</option><option>輪動</option><option>防守</option><option>補漲</option></select>
+          </div>
+          <div class="field">
+            <label for="axisRisk">風險事件</label>
+            <select id="axisRisk"><option>未分類</option><option>低</option><option>中</option><option>高</option></select>
+          </div>
+          <div class="field">
+            <label for="marketType">盤種類</label>
+            <select id="marketType">
+              <option>未分類</option>
+              <option>多頭主升盤</option>
+              <option>多頭震盪盤</option>
+              <option>高檔盤整盤</option>
+              <option>空頭下跌盤</option>
+              <option>空頭反彈盤</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-grid" style="margin-top:14px;">
+          <div class="field">
+            <label for="entryAttitude">進場態度</label>
+            <select id="entryAttitude">
+              <option>可積極進場</option>
+              <option>可小量試單</option>
+              <option>只觀察不追</option>
+              <option>禁止進場</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="mainNote">盤前備註</label>
+            <input id="mainNote" type="text" placeholder="例：看盤感覺量縮防守，先保守。" />
+          </div>
+        </div>
+
+        <div class="helper">MarketScore 開關規則：<b>小於 40</b> 禁止進場；<b>43–48</b> 可進場；其餘一律視為觀察區。<br>進場態度規則：<b>可積極進場</b> = 100% 部位；<b>可小量試單</b> = 50% 部位；其餘不進場。</div>
+      </div>
+
+      <div class="card">
+        <h2>2. 五日 OHLC 資料</h2>
+        <div class="card-sub">請貼上 <span class="hint-strong">T+1 到 T+5</span> 的日 K。支援逗號或 tab 分隔。欄位順序：<b>date,open,high,low,close</b>。第一列可以有標題。</div>
+        <div class="field full">
+          <label for="priceData">五日資料貼上區</label>
+          <textarea id="priceData" placeholder="date,open,high,low,close
+2026-04-10,912,918,905,916
+2026-04-11,917,925,910,922
+..."></textarea>
+        </div>
+        <div class="action-bar" style="margin-top:14px;">
+          <button class="btn btn-ghost" id="loadExampleBtn" type="button">載入示例</button>
+          <button class="btn btn-secondary" id="clearPriceBtn" type="button">清空資料</button>
+        </div>
+        <div class="helper">止損順序固定：<b>先判斷全賣</b>，再判斷減半。也就是說，當日最低價如果直接打到全賣線，就不演半套，直接全數出場。</div>
+        <div style="margin-top:14px;" id="previewArea"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. 啟動模擬</h2>
+      <div class="status-strip" id="gateStatusWrap"></div>
+      <div class="action-bar" style="margin-top:14px;">
+        <button class="btn btn-primary" id="simulateBtn" type="button">開始模擬</button>
+        <button class="btn btn-success" id="saveBtn" type="button" disabled>存成離場紀錄</button>
+        <button class="btn btn-secondary" id="resetBtn" type="button">重置本次結果</button>
+        <button class="btn btn-secondary" id="exportBtn" type="button">匯出紀錄 CSV</button>
+      </div>
+    </section>
+
+    <section class="results" id="resultSection" style="display:none;">
+      <div class="card fade">
+        <h2>4. 方案結果</h2>
+        <div class="summary-box" id="summaryBox"></div>
+        <div class="plan-grid" id="planGrid" style="margin-top:16px;"></div>
+      </div>
+      <div class="card fade">
+        <h2>5. 離場軌跡</h2>
+        <div class="card-sub">只看真正重要的：有沒有先減半、最後怎麼離場、是哪一天出去。</div>
+        <div id="timelineArea"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>6. 事後追因區</h2>
+      <div class="card-sub">這區只做驗屍，不參與進場決策。也就是說，主模型乾淨，你的死因另立戶籍。</div>
+      <div class="check-grid">
+        <label class="check"><input type="checkbox" value="戰爭" class="post-tag" />戰爭</label>
+        <label class="check"><input type="checkbox" value="關稅" class="post-tag" />關稅</label>
+        <label class="check"><input type="checkbox" value="FOMC / CPI" class="post-tag" />FOMC / CPI</label>
+        <label class="check"><input type="checkbox" value="長假前" class="post-tag" />長假前</label>
+        <label class="check"><input type="checkbox" value="月底" class="post-tag" />月底</label>
+        <label class="check"><input type="checkbox" value="黑天鵝" class="post-tag" />黑天鵝</label>
+        <label class="check"><input type="checkbox" value="尾盤轉弱" class="post-tag" />尾盤轉弱</label>
+        <label class="check"><input type="checkbox" value="族群熄火" class="post-tag" />族群熄火</label>
+      </div>
+      <div class="field full" style="margin-top:14px;">
+        <label for="postNote">追因備註</label>
+        <textarea id="postNote" placeholder="例：這筆其實不是模型爛，是 FOMC 前市場先縮手，尾盤又轉弱。"></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="record-tools">
+        <div>
+          <h2 style="margin:0 0 8px;">7. 離場紀錄簿</h2>
+          <div class="tiny">存在瀏覽器本機，重新整理不會消失。你刪快取它才會蒸發。</div>
+        </div>
+        <div class="record-stats" id="recordStats"></div>
+      </div>
+      <div id="recordArea"></div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'ajie_entry_simulator_records_v1';
+
+    const plans = {
+      A: { key:'A', label:'A 方案', half:0.05, full:0.07, desc:'-5% 減半 / -7% 全賣' },
+      B: { key:'B', label:'B 方案', half:0.03, full:0.05, desc:'-3% 減半 / -5% 全賣' },
+      C: { key:'C', label:'C 方案', half:0.015, full:0.03, desc:'-1.5% 減半 / -3% 全賣' }
+    };
+
+    const els = {
+      stockCode: document.getElementById('stockCode'),
+      stockName: document.getElementById('stockName'),
+      signalDate: document.getElementById('signalDate'),
+      rankSelect: document.getElementById('rankSelect'),
+      marketScore: document.getElementById('marketScore'),
+      planSelect: document.getElementById('planSelect'),
+      axisDirection: document.getElementById('axisDirection'),
+      axisVolatility: document.getElementById('axisVolatility'),
+      axisVolume: document.getElementById('axisVolume'),
+      axisStructure: document.getElementById('axisStructure'),
+      axisRisk: document.getElementById('axisRisk'),
+      marketType: document.getElementById('marketType'),
+      entryAttitude: document.getElementById('entryAttitude'),
+      mainNote: document.getElementById('mainNote'),
+      priceData: document.getElementById('priceData'),
+      previewArea: document.getElementById('previewArea'),
+      gateStatusWrap: document.getElementById('gateStatusWrap'),
+      simulateBtn: document.getElementById('simulateBtn'),
+      saveBtn: document.getElementById('saveBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      loadExampleBtn: document.getElementById('loadExampleBtn'),
+      clearPriceBtn: document.getElementById('clearPriceBtn'),
+      resultSection: document.getElementById('resultSection'),
+      summaryBox: document.getElementById('summaryBox'),
+      planGrid: document.getElementById('planGrid'),
+      timelineArea: document.getElementById('timelineArea'),
+      postNote: document.getElementById('postNote'),
+      recordArea: document.getElementById('recordArea'),
+      recordStats: document.getElementById('recordStats')
+    };
+
+    let latestResults = [];
+    let records = loadRecords();
+
+    function loadRecords(){
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function saveRecords(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      renderRecords();
+    }
+
+    function getSelectedPostTags(){
+      return [...document.querySelectorAll('.post-tag:checked')].map(el => el.value);
+    }
+
+    function getAttitudeSize(attitude){
+      if(attitude === '可積極進場') return 1;
+      if(attitude === '可小量試單') return 0.5;
+      return 0;
+    }
+
+    function getGateState(score){
+      const ms = Number(score);
+      if(Number.isNaN(ms)) return { type:'info', label:'等待輸入 MarketScore', desc:'先填分數，門神才知道要不要開門。', canEnter:false };
+      if(ms < 40) return { type:'no', label:'禁止進場', desc:'MarketScore < 40，這天先收刀。', canEnter:false };
+      if(ms >= 43 && ms <= 48) return { type:'ok', label:'可進場', desc:'MarketScore 落在 43–48，門打開。', canEnter:true };
+      return { type:'warn', label:'觀察區', desc:'不在狙擊區，今天先看戲。', canEnter:false };
+    }
+
+    function escapeHtml(text){
+      return String(text ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    function parsePriceData(raw){
+      const lines = String(raw || '').split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+      if(!lines.length) return [];
+      const rows = [];
+      for(const line of lines){
+        const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+        if(parts.length < 5) continue;
+        const [date, open, high, low, close] = parts.map(v => String(v).trim());
+        const lower = `${date}|${open}|${high}|${low}|${close}`.toLowerCase();
+        if(lower.includes('date') || lower.includes('日期') || lower.includes('open')) continue;
+        const row = {
+          date,
+          open:Number(open),
+          high:Number(high),
+          low:Number(low),
+          close:Number(close)
+        };
+        if([row.open,row.high,row.low,row.close].some(Number.isNaN)) continue;
+        rows.push(row);
+      }
+      rows.sort((a,b) => String(a.date).localeCompare(String(b.date)));
+      return rows.slice(0,5);
+    }
+
+    function formatPct(value){
+      if(value == null || Number.isNaN(value)) return '-';
+      const sign = value > 0 ? '+' : '';
+      return `${sign}${value.toFixed(2)}%`;
+    }
+
+    function formatPrice(value){
+      if(value == null || Number.isNaN(value)) return '-';
+      return Number(value).toFixed(2);
+    }
+
+    function renderPreview(){
+      const rows = parsePriceData(els.priceData.value);
+      if(!rows.length){
+        els.previewArea.innerHTML = '<div class="empty">還沒抓到有效 OHLC。貼上五日資料後，這裡會幫你先驗屍一次。</div>';
+        return rows;
+      }
+      const html = `
+        <div class="preview-wrap">
+          <table class="preview-table">
+            <thead><tr><th>日數</th><th>日期</th><th>Open</th><th>High</th><th>Low</th><th>Close</th></tr></thead>
+            <tbody>
+              ${rows.map((row, idx) => `
+                <tr>
+                  <td>D${idx+1}</td>
+                  <td>${escapeHtml(row.date)}</td>
+                  <td>${formatPrice(row.open)}</td>
+                  <td>${formatPrice(row.high)}</td>
+                  <td>${formatPrice(row.low)}</td>
+                  <td>${formatPrice(row.close)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      els.previewArea.innerHTML = html;
+      return rows;
+    }
+
+    function updateGateStatus(){
+      const gate = getGateState(els.marketScore.value);
+      const attitude = els.entryAttitude.value;
+      const size = getAttitudeSize(attitude);
+      const sizeLabel = size === 1 ? '100% 部位' : size === 0.5 ? '50% 部位' : '0% 部位';
+      els.gateStatusWrap.innerHTML = `
+        <div class="badge ${gate.type}"><span class="b-dot"></span>${gate.label}</div>
+        <div class="badge info"><span class="b-dot"></span>${sizeLabel}</div>
+        <div class="tiny">${escapeHtml(gate.desc)}</div>
+      `;
+    }
+
+    function buildMeta(){
+      return {
+        stockCode: els.stockCode.value.trim(),
+        stockName: els.stockName.value.trim(),
+        signalDate: els.signalDate.value,
+        rank: els.rankSelect.value,
+        marketScore: Number(els.marketScore.value),
+        planSelection: els.planSelect.value,
+        direction: els.axisDirection.value,
+        volatility: els.axisVolatility.value,
+        volumeState: els.axisVolume.value,
+        structure: els.axisStructure.value,
+        riskEvent: els.axisRisk.value,
+        marketType: els.marketType.value,
+        entryAttitude: els.entryAttitude.value,
+        mainNote: els.mainNote.value.trim()
+      };
+    }
+
+    function validateMeta(meta, rows){
+      const errors = [];
+      if(!meta.stockCode) errors.push('請輸入股票代號');
+      if(!meta.signalDate) errors.push('請輸入訊號日期');
+      if(Number.isNaN(meta.marketScore)) errors.push('請輸入 MarketScore');
+      if(rows.length < 5) errors.push('請貼上完整 5 日 OHLC 資料');
+      return errors;
+    }
+
+    function simulatePlan(plan, rows, meta){
+      const gate = getGateState(meta.marketScore);
+      const attitudeSize = getAttitudeSize(meta.entryAttitude);
+      const base = {
+        planKey: plan.key,
+        planLabel: plan.label,
+        planDesc: plan.desc,
+        status: 'blocked',
+        blockReason: '',
+        entryDate: rows[0]?.date || '',
+        entryPrice: rows[0]?.open || null,
+        halfPrice: rows[0]?.open ? rows[0].open * (1 - plan.half) : null,
+        fullPrice: rows[0]?.open ? rows[0].open * (1 - plan.full) : null,
+        halfTriggered: false,
+        halfDate: '',
+        halfExitPrice: null,
+        finalExitDate: '',
+        finalExitPrice: null,
+        finalExitReason: '',
+        returnPct: 0,
+        rawReturnPct: 0,
+        positionSize: attitudeSize,
+        timeline: []
+      };
+
+      if(!gate.canEnter){
+        base.blockReason = gate.label;
+        return base;
+      }
+      if(attitudeSize <= 0){
+        base.blockReason = '進場態度禁止';
+        return base;
+      }
+
+      let remaining = attitudeSize;
+      let realizedPct = 0;
+      const entryPrice = base.entryPrice;
+      const halfQty = attitudeSize / 2;
+      let finalClosed = false;
+
+      base.status = 'entered';
+
+      for(let i=0; i<rows.length; i++){
+        const day = rows[i];
+        const dayLabel = `D${i+1}`;
+        const note = { day: dayLabel, date: day.date, low: day.low, close: day.close, action: '持有', detail: '未觸發' };
+
+        if(remaining > 0 && day.low <= base.fullPrice){
+          realizedPct += remaining * ((base.fullPrice - entryPrice) / entryPrice) * 100;
+          base.finalExitDate = day.date;
+          base.finalExitPrice = base.fullPrice;
+          base.finalExitReason = '全賣停損';
+          note.action = '全賣';
+          note.detail = `低點 ${formatPrice(day.low)} 觸發全賣線 ${formatPrice(base.fullPrice)}`;
+          remaining = 0;
+          finalClosed = true;
+          base.timeline.push(note);
+          break;
+        }
+
+        if(!base.halfTriggered && remaining > 0 && day.low <= base.halfPrice){
+          realizedPct += halfQty * ((base.halfPrice - entryPrice) / entryPrice) * 100;
+          remaining -= halfQty;
+          base.halfTriggered = true;
+          base.halfDate = day.date;
+          base.halfExitPrice = base.halfPrice;
+          note.action = '減半';
+          note.detail = `低點 ${formatPrice(day.low)} 觸發減半線 ${formatPrice(base.halfPrice)}`;
+        }
+
+        base.timeline.push(note);
+      }
+
+      if(!finalClosed && remaining > 0){
+        const last = rows[rows.length - 1];
+        realizedPct += remaining * ((last.close - entryPrice) / entryPrice) * 100;
+        base.finalExitDate = last.date;
+        base.finalExitPrice = last.close;
+        base.finalExitReason = '第 5 天強制賣';
+        base.timeline.push({ day:'D5', date:last.date, low:last.low, close:last.close, action:'結算', detail:`第 5 天收盤 ${formatPrice(last.close)} 強制結算` });
+      }
+
+      const rawReturn = attitudeSize > 0 ? realizedPct / attitudeSize : 0;
+      base.returnPct = realizedPct;
+      base.rawReturnPct = rawReturn;
+      base.status = 'exit';
+      return base;
+    }
+
+    function getActivePlans(){
+      const value = els.planSelect.value;
+      if(value === 'ALL') return [plans.A, plans.B, plans.C];
+      return [plans[value]];
+    }
+
+    function renderResults(meta, rows, results){
+      els.resultSection.style.display = 'grid';
+      const enteredResults = results.filter(r => r.status === 'exit');
+      const best = enteredResults.slice().sort((a,b) => b.returnPct - a.returnPct)[0];
+      const gate = getGateState(meta.marketScore);
+
+      els.summaryBox.innerHTML = `
+        <div class="summary-card"><div class="lab">開關狀態</div><div class="num">${escapeHtml(gate.label)}</div></div>
+        <div class="summary-card"><div class="lab">比較方案</div><div class="num">${results.length}</div></div>
+        <div class="summary-card"><div class="lab">最佳方案</div><div class="num">${best ? escapeHtml(best.planLabel) : '—'}</div></div>
+        <div class="summary-card"><div class="lab">最佳報酬</div><div class="num ${best ? (best.returnPct >= 0 ? 'up' : 'down') : 'neutral'}">${best ? formatPct(best.returnPct) : '—'}</div></div>
+      `;
+
+      els.planGrid.innerHTML = results.map(result => {
+        const tone = result.returnPct > 0 ? 'up' : result.returnPct < 0 ? 'down' : 'neutral';
+        return `
+          <article class="plan-card">
+            <h3>${escapeHtml(result.planLabel)} <span class="plan-status ${result.status === 'blocked' ? 'blocked' : 'exit'}">${result.status === 'blocked' ? escapeHtml(result.blockReason) : escapeHtml(result.finalExitReason)}</span></h3>
+            <div class="sub">${escapeHtml(result.planDesc)}</div>
+            <div class="big-return ${tone}">${result.status === 'blocked' ? '未進場' : formatPct(result.returnPct)}</div>
+            <div class="metric">
+              <div class="metric-row"><span>進場日 / 價</span><b>${result.status === 'blocked' ? '—' : `${escapeHtml(result.entryDate)} / ${formatPrice(result.entryPrice)}`}</b></div>
+              <div class="metric-row"><span>減半線</span><b>${result.status === 'blocked' ? '—' : formatPrice(result.halfPrice)}</b></div>
+              <div class="metric-row"><span>全賣線</span><b>${result.status === 'blocked' ? '—' : formatPrice(result.fullPrice)}</b></div>
+              <div class="metric-row"><span>最終離場</span><b>${result.status === 'blocked' ? '—' : `${escapeHtml(result.finalExitDate)} / ${formatPrice(result.finalExitPrice)}`}</b></div>
+              <div class="metric-row"><span>是否減半</span><b>${result.halfTriggered ? `是（${escapeHtml(result.halfDate)}）` : '否'}</b></div>
+              <div class="metric-row"><span>部位倍率</span><b>${result.positionSize === 1 ? '100%' : result.positionSize === 0.5 ? '50%' : '0%'}</b></div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      renderTimeline(results);
+      els.saveBtn.disabled = !enteredResults.length;
+    }
+
+    function renderTimeline(results){
+      const enteredResults = results.filter(r => r.status === 'exit');
+      if(!enteredResults.length){
+        els.timelineArea.innerHTML = '<div class="empty">今天沒進場，離場軌跡自然也空空。門神這次把你攔下來了。</div>';
+        return;
+      }
+      els.timelineArea.innerHTML = enteredResults.map(result => `
+        <div style="margin-bottom:14px;">
+          <div class="badge info" style="margin-bottom:10px;"><span class="b-dot"></span>${escapeHtml(result.planLabel)}｜${escapeHtml(result.planDesc)}</div>
+          <div class="timeline-wrap">
+            <table class="timeline-table">
+              <thead><tr><th>日數</th><th>日期</th><th>Low</th><th>Close</th><th>動作</th><th>說明</th></tr></thead>
+              <tbody>
+                ${result.timeline.map(item => `
+                  <tr>
+                    <td>${escapeHtml(item.day)}</td>
+                    <td>${escapeHtml(item.date)}</td>
+                    <td>${formatPrice(item.low)}</td>
+                    <td>${formatPrice(item.close)}</td>
+                    <td>${escapeHtml(item.action)}</td>
+                    <td>${escapeHtml(item.detail)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function simulate(){
+      const rows = renderPreview();
+      const meta = buildMeta();
+      const errors = validateMeta(meta, rows);
+      if(errors.length){
+        alert(errors.join('\n'));
+        return;
+      }
+      const activePlans = getActivePlans();
+      latestResults = activePlans.map(plan => simulatePlan(plan, rows, meta));
+      renderResults(meta, rows, latestResults);
+      window.scrollTo({ top: document.body.scrollHeight * 0.35, behavior:'smooth' });
+    }
+
+    function saveCurrentResults(){
+      if(!latestResults.length){
+        alert('先跑一次模擬，沒結果我沒東西記。');
+        return;
+      }
+      const meta = buildMeta();
+      const postTags = getSelectedPostTags();
+      const postNote = els.postNote.value.trim();
+      const savable = latestResults.filter(r => r.status === 'exit');
+      if(!savable.length){
+        alert('這次沒有實際進場紀錄可存。');
+        return;
+      }
+      const stamp = new Date().toISOString();
+      savable.forEach(result => {
+        records.unshift({
+          id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+          savedAt: stamp,
+          stockCode: meta.stockCode,
+          stockName: meta.stockName,
+          signalDate: meta.signalDate,
+          entryDate: result.entryDate,
+          rank: meta.rank,
+          marketScore: meta.marketScore,
+          direction: meta.direction,
+          volatility: meta.volatility,
+          volumeState: meta.volumeState,
+          structure: meta.structure,
+          riskEvent: meta.riskEvent,
+          marketType: meta.marketType,
+          entryAttitude: meta.entryAttitude,
+          mainNote: meta.mainNote,
+          planKey: result.planKey,
+          planLabel: result.planLabel,
+          planDesc: result.planDesc,
+          entryPrice: result.entryPrice,
+          halfPrice: result.halfPrice,
+          fullPrice: result.fullPrice,
+          halfTriggered: result.halfTriggered ? '是' : '否',
+          halfDate: result.halfDate,
+          halfExitPrice: result.halfExitPrice,
+          finalExitDate: result.finalExitDate,
+          finalExitPrice: result.finalExitPrice,
+          finalExitReason: result.finalExitReason,
+          returnPct: Number(result.returnPct.toFixed(2)),
+          rawReturnPct: Number(result.rawReturnPct.toFixed(2)),
+          positionSize: result.positionSize,
+          postTags: postTags.join('、'),
+          postNote,
+        });
+      });
+      saveRecords();
+      alert('已存進離場紀錄簿。這次死法有被好好歸檔。');
+    }
+
+    function renderRecords(){
+      const total = records.length;
+      const wins = records.filter(r => Number(r.returnPct) > 0).length;
+      const avg = total ? records.reduce((sum,r) => sum + Number(r.returnPct || 0), 0) / total : 0;
+      const byPlan = ['A','B','C'].map(key => ({ key, count: records.filter(r => r.planKey === key).length, avg: calcPlanAvg(key) })).sort((a,b) => b.avg - a.avg)[0];
+      els.recordStats.innerHTML = `
+        <div class="pill"><b>${total}</b> 筆紀錄</div>
+        <div class="pill"><b>${total ? ((wins/total)*100).toFixed(1) : '0.0'}%</b> 勝率</div>
+        <div class="pill"><b>${formatPct(avg)}</b> 平均報酬</div>
+        <div class="pill"><b>${byPlan?.key || '—'}</b> 目前最能活</div>
+      `;
+
+      if(!records.length){
+        els.recordArea.innerHTML = '<div class="empty">目前還沒有離場紀錄。先跑一筆模擬，再把死因收進資料夾。</div>';
+        return;
+      }
+
+      els.recordArea.innerHTML = `
+        <div class="record-wrap">
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>股票</th>
+                <th>訊號日</th>
+                <th>方案</th>
+                <th>進場</th>
+                <th>最終離場</th>
+                <th>結果</th>
+                <th>盤種類</th>
+                <th>進場態度</th>
+                <th>追因</th>
+                <th>備註</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${records.map(row => `
+                <tr>
+                  <td><b>${escapeHtml(row.stockCode)}</b>${row.stockName ? ` / ${escapeHtml(row.stockName)}` : ''}</td>
+                  <td>${escapeHtml(row.signalDate)}</td>
+                  <td>${escapeHtml(row.planLabel)}</td>
+                  <td>${escapeHtml(row.entryDate)} / ${formatPrice(row.entryPrice)}</td>
+                  <td>${escapeHtml(row.finalExitDate)} / ${formatPrice(row.finalExitPrice)}<br><span class="tiny">${escapeHtml(row.finalExitReason)}</span></td>
+                  <td class="${Number(row.returnPct) >= 0 ? 'up' : 'down'}"><b>${formatPct(Number(row.returnPct))}</b></td>
+                  <td>${escapeHtml(row.marketType)}</td>
+                  <td>${escapeHtml(row.entryAttitude)}</td>
+                  <td>${escapeHtml(row.postTags || '-')}</td>
+                  <td>${escapeHtml((row.mainNote || '') + (row.postNote ? ` / ${row.postNote}` : ''))}</td>
+                  <td><button class="delete-btn" data-id="${escapeHtml(row.id)}">刪除</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      [...document.querySelectorAll('.delete-btn')].forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          records = records.filter(r => r.id !== id);
+          saveRecords();
+        });
+      });
+    }
+
+    function calcPlanAvg(key){
+      const arr = records.filter(r => r.planKey === key);
+      if(!arr.length) return -Infinity;
+      return arr.reduce((sum,r) => sum + Number(r.returnPct || 0), 0) / arr.length;
+    }
+
+    function exportCsv(){
+      if(!records.length){
+        alert('還沒有紀錄可以匯出。');
+        return;
+      }
+      const columns = [
+        'savedAt','stockCode','stockName','signalDate','entryDate','rank','marketScore','direction','volatility','volumeState','structure','riskEvent','marketType','entryAttitude','mainNote','planKey','planLabel','planDesc','entryPrice','halfPrice','fullPrice','halfTriggered','halfDate','halfExitPrice','finalExitDate','finalExitPrice','finalExitReason','returnPct','rawReturnPct','positionSize','postTags','postNote'
+      ];
+      const csv = [
+        columns.join(','),
+        ...records.map(row => columns.map(col => {
+          const v = row[col] ?? '';
+          const text = String(v).replace(/"/g, '""');
+          return `"${text}"`;
+        }).join(','))
+      ].join('\n');
+      const blob = new Blob(["\ufeff" + csv], { type:'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ajie_exit_records_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetCurrent(){
+      latestResults = [];
+      els.resultSection.style.display = 'none';
+      els.planGrid.innerHTML = '';
+      els.summaryBox.innerHTML = '';
+      els.timelineArea.innerHTML = '';
+      els.saveBtn.disabled = true;
+    }
+
+    function loadExample(){
+      if(!els.signalDate.value){
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth()+1).padStart(2,'0');
+        const dd = String(today.getDate()).padStart(2,'0');
+        els.signalDate.value = `${yyyy}-${mm}-${dd}`;
+      }
+      els.stockCode.value = '2330';
+      els.stockName.value = '台積電';
+      els.rankSelect.value = 'Top3';
+      els.marketScore.value = '45';
+      els.marketType.value = '多頭震盪盤';
+      els.entryAttitude.value = '可小量試單';
+      els.axisDirection.value = '多';
+      els.axisVolatility.value = '中';
+      els.axisVolume.value = '縮量';
+      els.axisStructure.value = '輪動';
+      els.axisRisk.value = '低';
+      els.mainNote.value = '示例資料：先用半倉測止損手感。';
+      els.priceData.value = `date,open,high,low,close\n2026-04-10,912,918,905,916\n2026-04-11,917,925,900,902\n2026-04-12,904,908,884,888\n2026-04-13,889,894,876,880\n2026-04-14,882,898,878,896`;
+      renderPreview();
+      updateGateStatus();
+    }
+
+    els.priceData.addEventListener('input', renderPreview);
+    els.marketScore.addEventListener('input', updateGateStatus);
+    els.entryAttitude.addEventListener('change', updateGateStatus);
+    els.simulateBtn.addEventListener('click', simulate);
+    els.saveBtn.addEventListener('click', saveCurrentResults);
+    els.resetBtn.addEventListener('click', resetCurrent);
+    els.exportBtn.addEventListener('click', exportCsv);
+    els.loadExampleBtn.addEventListener('click', loadExample);
+    els.clearPriceBtn.addEventListener('click', () => { els.priceData.value=''; renderPreview(); });
+
+    renderPreview();
+    updateGateStatus();
+    renderRecords();
+  </script>
+</body>
+</html>
