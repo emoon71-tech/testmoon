@@ -297,6 +297,7 @@
           <button class="btn btnSoft" id="runBtn">跑 A / B / C / D 方案</button>
           <button class="btn btnGhost" id="logBtn">加入紀錄簿</button>
           <button class="btn btnGhost" id="csvBtn">匯出 CSV</button>
+          <button class="btn btnGhost" id="clearLogBtn">清空紀錄簿</button>
         </div>
 
         <div id="statusBox" class="statusBox">等你按「自動抓 5 日資料」。抓到之後，這裡會說人話，不會裝神弄鬼。</div>
@@ -824,6 +825,20 @@
       `).join('') : `<tr><td colspan="5" class="small" style="padding:16px">紀錄簿目前還空著。先去跑一筆，讓它不要那麼寂寞。</td></tr>`;
     }
 
+
+    function clearLogs(){
+      const logs = getLogs();
+      if (!logs.length) {
+        setStatus('紀錄簿本來就是空的，不用特地再清一次。', 'Err');
+        return;
+      }
+      const ok = confirm('確定要清空整本紀錄簿嗎？這會把 localStorage 裡的模擬紀錄全部刪掉。');
+      if (!ok) return;
+      localStorage.removeItem('ajie-entry-sim-logs');
+      renderLog();
+      setStatus('紀錄簿已清空。乾淨到像昨天沒進場。', 'Ok');
+    }
+
     function exportCsv(){
       const logs = getLogs();
       if (!logs.length) {
@@ -851,6 +866,7 @@
     document.getElementById('runBtn').addEventListener('click', runSimulation);
     document.getElementById('logBtn').addEventListener('click', addLog);
     document.getElementById('csvBtn').addEventListener('click', exportCsv);
+    document.getElementById('clearLogBtn').addEventListener('click', clearLogs);
 
     renderLog();
     // 起手先給點預設骨架，避免空畫面太乾。
